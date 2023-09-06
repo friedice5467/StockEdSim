@@ -2,22 +2,22 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StockEdSim.Api.Db;
+using StockEdSim.Api.Db.DbHelper;
+using StockEdSim.Api.Model;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 
-// Register the DbContext with PostgreSQL
-builder.Services.AddDbContext<MoviesContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<MoviesContext>()
+    .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// CORS setup as mentioned before
 var corsSettings = builder.Configuration.GetSection("CORS").Get<CorsSettings>();
 builder.Services.AddCors(options =>
 {
@@ -49,13 +49,21 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
-// Swagger setup
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using var scope = app.Services.CreateScope();
+try
+{
+    await SeedRoles.SeedRolesAsync(scope.ServiceProvider);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Exception: {ex.Message}");
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -71,5 +79,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-// Define CorsSettings class and YourDbContext outside of this main class.
