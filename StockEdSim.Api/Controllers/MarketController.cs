@@ -187,7 +187,8 @@
             [HttpGet("myclasses/students")]
             public async Task<IActionResult> GetStudentsAcrossMyClasses()
             {
-                var teacherId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value); 
+                var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var tryParse = Guid.TryParse(checkThis, out Guid teacherId);
 
                 var classes = await _context.Classes.Where(c => c.TeacherId == teacherId).ToListAsync();
 

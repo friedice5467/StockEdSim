@@ -14,9 +14,9 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
+.AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders();
 
 var corsSettings = builder.Configuration.GetSection("CORS").Get<CorsSettings>();
 builder.Services.AddCors(options =>
@@ -53,16 +53,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-using var scope = app.Services.CreateScope();
-try
-{
-    await SeedRoles.SeedRolesAsync(scope.ServiceProvider);
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Exception: {ex.Message}");
-}
 
 if (app.Environment.IsDevelopment())
 {
