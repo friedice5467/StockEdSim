@@ -14,6 +14,7 @@ namespace StockEdSim.Api.Db
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<UserClass> UserClasses { get; set; }
+        public DbSet<ClassBalance> ClassBalances { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,6 +47,16 @@ namespace StockEdSim.Api.Db
                 .HasMany(u => u.Stocks)
                 .WithOne(s => s.Student)
                 .HasForeignKey(s => s.StudentId);
+
+            modelBuilder.Entity<ClassBalance>()
+                .HasOne(cb => cb.User)
+                .WithMany(u => u.ClassBalances)
+                .HasForeignKey(cb => cb.UserId);
+
+            modelBuilder.Entity<ClassBalance>()
+            .HasOne(cb => cb.Class)
+            .WithMany(c => c.ClassBalances)
+            .HasForeignKey(cb => cb.ClassId);
         }
     }
 

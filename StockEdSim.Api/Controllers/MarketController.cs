@@ -37,7 +37,7 @@ public class MarketController : ControllerBase
     }
 
     [HttpGet("candle/{symbol}")]
-    public async Task<IActionResult> GetStockCandles(string symbol)
+    public async Task<IActionResult> GetStockCandles([FromRoute]string symbol)
     {
         var oneYearAgo = DateTimeOffset.UtcNow.AddYears(-1).ToUnixTimeSeconds();
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -54,13 +54,18 @@ public class MarketController : ControllerBase
         return BadRequest("Error fetching stock candles.");
     }
 
-    [HttpPost("buy")]
-    public async Task<IActionResult> BuyStock([FromBody] Stock stockPurchase)
+    [HttpPost("buy/{classId}")]
+    public async Task<IActionResult> BuyStock([FromBody] Stock stockPurchase, [FromRoute] string classId)
     {
         var student = await _context.Users.FindAsync(stockPurchase.StudentId);
         if (student == null)
         {
             return BadRequest("Student not found.");
+        }
+        var balance = student.ClassBalances.FirstOrDefault(x => x.ClassId == Guid.Parse(classId));
+        if (balance == null)
+        {
+            return BadRequest("Student does not have a balance for this class");
         }
 
         var currentStockPrice = await GetStockQuote(stockPurchase.StockSymbol);
@@ -69,12 +74,12 @@ public class MarketController : ControllerBase
             return BadRequest("Error fetching stock price.");
         }
 
-        if (student.Balance < currentStockPrice.Value * stockPurchase.Amount)
+        if (balance.Balance < (decimal)currentStockPrice.Value * (decimal)stockPurchase.Amount)
         {
             return BadRequest("Insufficient funds.");
         }
 
-        student.Balance -= currentStockPrice.Value * stockPurchase.Amount;
+        balance.Balance -= (decimal)currentStockPrice.Value * (decimal)stockPurchase.Amount;
 
         var existingStock = await _context.Stocks.FindAsync(stockPurchase.StudentId, stockPurchase.StockSymbol);
         if (existingStock != null)
@@ -107,13 +112,18 @@ public class MarketController : ControllerBase
         return Ok("Stock purchased successfully.");
     }
 
-    [HttpPost("sell")]
-    public async Task<IActionResult> SellStock([FromBody] Stock stockSale)
+    [HttpPost("sell/{classId}")]
+    public async Task<IActionResult> SellStock([FromBody] Stock stockSale, [FromRoute] string classId)
     {
         var student = await _context.Users.FindAsync(stockSale.StudentId);
         if (student == null)
         {
             return BadRequest("Student not found.");
+        }
+        var balance = student.ClassBalances.FirstOrDefault(x => x.ClassId == Guid.Parse(classId));
+        if (balance == null)
+        {
+            return BadRequest("Student does not have a balance for this class");
         }
 
         var currentStockPrice = await GetStockQuote(stockSale.StockSymbol);
@@ -128,7 +138,7 @@ public class MarketController : ControllerBase
             return BadRequest("Not enough stock to sell.");
         }
 
-        student.Balance += currentStockPrice.Value * stockSale.Amount;
+        balance.Balance += (decimal)currentStockPrice.Value * (decimal)stockSale.Amount;
         existingStock.Amount -= stockSale.Amount;
 
         if (existingStock.Amount == 0)
@@ -176,11 +186,32 @@ public class MarketController : ControllerBase
     }
 
     [Authorize(Roles = "Admin,Teacher")]
+    [HttpGet("myclasses/createClass")]
+    public async Task<IActionResult> CreateClassroom([FromBody] Class createClass)
+    {
+        var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var check = Guid.TryParse(checkThis, out Guid teacherId);
+        if (!check)
+            return BadRequest("User does not exist");
+
+        await _context.Classes.AddAsync(new Class()
+        {
+            Id = Guid.NewGuid(),
+            ClassName = createClass.ClassName,
+            TeacherId = teacherId,
+        });
+
+        return Ok(createClass);
+    }
+
+    [Authorize(Roles = "Admin,Teacher")]
     [HttpGet("myclasses/students")]
     public async Task<IActionResult> GetStudentsAcrossMyClasses()
     {
         var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var tryParse = Guid.TryParse(checkThis, out Guid teacherId);
+        var check = Guid.TryParse(checkThis, out Guid teacherId);
+        if (!check)
+            return BadRequest("User does not exist");
 
         var classes = await _context.Classes.Where(c => c.TeacherId == teacherId).ToListAsync();
 
@@ -193,7 +224,7 @@ public class MarketController : ControllerBase
                             .Select(uc => new StudentData
                             {
                                 StudentId = uc.UserId,
-                                StudentName = uc.User.FullName,
+                                StudentName = uc.User.FullName ?? string.Empty,
                                 Profit = _context.Transactions
                                                  .Where(t => t.StudentId == uc.UserId)
                                                  .Sum(t => t.PriceAtTransaction * t.Amount),
@@ -209,6 +240,72 @@ public class MarketController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [HttpGet("myprofile/dashboard")]
+    public async Task<IActionResult> GetDashboardData()
+    {
+        var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var check = Guid.TryParse(checkThis, out Guid guidId);
+        if (!check) 
+            return BadRequest("invalid user ID");
+
+        var data = await _context.Users.Where(u => u.Id == guidId)
+            .Select(u => new DashboardData
+            {
+                Stocks = u.Stocks.ToList(),
+                Transactions = u.Transactions.ToList(),
+                Classes = u.UserClasses.Select(x => x.Class).ToList(),
+            }).ToListAsync();
+
+        return Ok(data);
+    }
+
+    [HttpGet("myprofile/GetClasses")]
+    public async Task<IActionResult> GetClassesData()
+    {
+        var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var check = Guid.TryParse(checkThis, out Guid guidId);
+        if (!check)
+            return BadRequest("invalid user ID");
+
+        var classes = await _context.UserClasses
+            .Where(uc => uc.UserId == guidId)
+            .SelectMany(uc => new List<Class>()
+            {
+                uc.Class
+            })
+            .ToListAsync();
+
+        return Ok(classes);
+    }
+
+    [HttpPost("joinClass/{classId}")]
+    public async Task<IActionResult> JoinClassById([FromRoute] string classId)
+    {
+        var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var check = Guid.TryParse(checkThis, out Guid userId);
+        if (!check)
+            return BadRequest("invalid user ID");
+
+        var getExisting = _context.ClassBalances.Where(x => x.UserId == userId && x.ClassId == Guid.Parse(classId));
+        ClassBalance bal = new();
+        if (getExisting.Any())
+        {
+            return BadRequest("User already joined the class");
+        }
+        else
+        {
+            bal = new() 
+            { 
+                UserId = userId,
+                ClassId = Guid.Parse(classId),
+                Balance = _context.Classes.FirstOrDefault(x => x.Id == Guid.Parse(classId))?.DefaultBalance ?? new ClassBalance().Balance
+            };
+            await _context.ClassBalances.AddAsync(bal);
+            _context.SaveChanges();
+        }
+        return Ok(bal);
     }
 
     private async Task<bool> LogTransaction(Transaction transaction)

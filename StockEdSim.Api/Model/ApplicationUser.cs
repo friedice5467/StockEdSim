@@ -11,6 +11,8 @@
         public virtual ICollection<Stock> Stocks { get; set; } = new List<Stock>();
         public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
         public virtual ICollection<Class> TaughtClasses { get; set; } = new List<Class>();
+        public virtual ICollection<ClassBalance> ClassBalances { get; set; } = new List<ClassBalance>();
+
     }
 
 }
