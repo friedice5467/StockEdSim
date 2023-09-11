@@ -12,7 +12,7 @@ using System.Text;
 public class IdentityController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
+    //private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IConfiguration _configuration;
 
     public IdentityController(UserManager<ApplicationUser> userManager,
