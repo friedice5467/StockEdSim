@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../../helpers/api';
-import { useAuth } from '../../../../helpers/AuthContext';
-import LoadingModal from '../../../LoadingModal';
-import ApiExceptionModal from '../../../ApiExceptionModal';
+import api from '../../../helpers/api';
+import { useAuth } from '../../../helpers/AuthContext';
+import LoadingModal from '../../LoadingModal';
+import ApiExceptionModal from '../../ApiExceptionModal';
 import AddClassModal from './AddClassModal';
 
 function ClassesView() {
@@ -14,7 +14,7 @@ function ClassesView() {
 
     useEffect(() => {
         if (currentUser && (currentUser.role === "Teacher" || currentUser.role === "Admin")) {
-            api.get("myclasses/students")
+            api.get("/market/myclasses/students")
                 .then(response => {
                     setClasses(response.data);
                     setLoading(false);
@@ -29,7 +29,7 @@ function ClassesView() {
 
     const handleCreateClass = (className) => {
         setLoading(true);
-        api.post("myclasses/createClass", { ClassName: className })
+        api.post("/market/myclasses/createClass", { ClassName: className })
             .then(response => {
                 setClasses(prev => [...prev, response.data]);
                 setShowAddModal(false);

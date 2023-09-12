@@ -271,10 +271,7 @@ public class MarketController : ControllerBase
 
         var classes = await _context.UserClasses
             .Where(uc => uc.UserId == guidId)
-            .SelectMany(uc => new List<Class>()
-            {
-                uc.Class
-            })
+            .Select(uc => uc.Class)
             .ToListAsync();
 
         return Ok(classes);

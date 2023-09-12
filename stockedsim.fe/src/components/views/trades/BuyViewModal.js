@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import api from '../../../../helpers/api';
-import { useAuth } from '../../../../helpers/AuthContext';
-import LoadingModal from '../../../LoadingModal';
-import ApiExceptionModal from '../../../ApiExceptionModal';
-import ConfirmationModal from '../../../ConfirmationModal'; 
+import api from '../../../helpers/api';
+import { useAuth } from '../../../helpers/AuthContext';
+import LoadingModal from '../../LoadingModal';
+import ApiExceptionModal from '../../ApiExceptionModal';
+import ConfirmationModal from '../../ConfirmationModal'; 
 
 function BuyViewModal({ classesData, classId, stockSymbol }) {
     const { currentUser } = useAuth();
@@ -53,7 +53,7 @@ function BuyViewModal({ classesData, classId, stockSymbol }) {
     };
 
         try {
-            const response = await api.post(`buy/${classId}`, stockPurchaseData);
+            const response = await api.post(`/market/buy/${classId}`, stockPurchaseData);
             if (response.status === 200) {
                 // Handle the successful purchase, maybe show a notification or refresh some data
             } else {

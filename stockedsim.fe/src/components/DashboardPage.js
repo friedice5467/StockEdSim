@@ -7,12 +7,12 @@ import { TECollapse } from "tw-elements-react";
 
 import ClassesView from './views/classes/ClassesView';
 import BuyView from './views/trades/BuyView';
-import SellView from './views/trades/SellView';
+/*import SellView from './views/trades/SellView';*/
 
 function DashboardPage() {
     const { currentUser } = useAuth();
     const userRole = currentUser && currentUser.role;
-
+    const { logout } = useAuth();
     const [view, setView] = useState('default');
     const [isLoading, setIsLoading] = useState(false);
     const [apiException, setApiException] = useState(null);
@@ -25,7 +25,7 @@ function DashboardPage() {
         if (currentUser) {
             setIsLoading(true);
 
-            api.get("myprofile/GetClasses")
+            api.get("/market/myprofile/GetClasses")
                 .then(response => {
                     setClasses(response.data);
                     setIsLoading(false);
@@ -66,8 +66,8 @@ function DashboardPage() {
                 return <ClassesView />;
             case 'buyView':
                 return <BuyView classesData={classes} classId={classId} />; 
-            case 'sellView':
-                return <SellView classesData={classes} classId={classId} />;
+            //case 'sellView':
+            //    return <SellView classesData={classes} classId={classId} />;
             // Add more cases as you expand the functionality
             default:
                 return (
@@ -83,7 +83,7 @@ function DashboardPage() {
         <div className="flex h-screen bg-gray-100">
             <header className="w-full bg-blue-600 p-4 text-white fixed">
                 StockEdSim
-                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded float-right">Logout</button>
+                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded float-right" onClick={logout}>Logout</button>
             </header>
             <aside className="bg-gray-800 p-4 pt-16 h-full fixed">
                 <nav>

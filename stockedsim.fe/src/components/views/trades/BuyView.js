@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ChartCanvas, Chart, series, scale, coordinates, tooltip, axes } from "react-financial-charts";
 import { timeInterval } from "d3-time";
 import { format } from "d3-format";
-import api from '../../../../helpers/api';
-import LoadingModal from '../../../LoadingModal';
-import ApiExceptionModal from '../../../ApiExceptionModal';
+import api from '../../../helpers/api';
+import LoadingModal from '../../LoadingModal';
+import ApiExceptionModal from '../../ApiExceptionModal';
 import BuyViewModal from './BuyViewModal';
 
-const { CandlestickSeries } = series;
-const { XAxis, YAxis } = axes;
-const { CrossHairCursor, MouseCoordinateX, MouseCoordinateY } = coordinates;
-const { OHLCTooltip } = tooltip;
+import { ChartCanvas, Chart, CandlestickSeries, XAxis, YAxis, CrossHairCursor, MouseCoordinateX, MouseCoordinateY, OHLCTooltip, discontinuousTimeScaleProviderBuilder } from "react-financial-charts";
+
 
 function BuyView(classesData, classId) {
     const [stocks, setStocks] = useState([]);
@@ -20,11 +17,14 @@ function BuyView(classesData, classId) {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
 
+    const xScaleProvider = discontinuousTimeScaleProviderBuilder().inputDateAccessor(d => d.date);
+    const { data: scaleData, xScale, xAccessor } = xScaleProvider(chartData);
+
     useEffect(() => {
         const fetchStocks = async () => {
             try {
                 setIsLoading(true);
-                const response = await api.get("symbols");
+                const response = await api.get("/market/symbols");
                 setStocks(response.data);
             } catch (error) {
                 console.error("Error fetching stock symbols:", error);
@@ -49,7 +49,7 @@ function BuyView(classesData, classId) {
     const handleStockClick = async (symbol) => {
         try {
             setIsLoading(true);
-            const response = await api.get(`candle/${symbol}`);
+            const response = await api.get(`/market/candle/${symbol}`);
             const data = response.data;
             if (data.s === "ok") {
                 const mappedData = data.t.map((timestamp, index) => ({
@@ -97,9 +97,9 @@ function BuyView(classesData, classId) {
                         margin={{ left: 50, right: 50, top: 10, bottom: 30 }}
                         type="hybrid"
                         seriesName="Data"
-                        data={chartData}
-                        xAccessor={d => d.date}
-                        xScale={scale.discontinuousTimeScaleProvider.inputDateAccessor(d => d.date)}
+                        data={scaleData}
+                        xAccessor={xAccessor}
+                        xScale={xScale}
                         xExtents={[chartData[0].date, chartData[chartData.length - 1].date]}
                     >
                         <Chart yExtents={d => [d.high, d.low]}>
