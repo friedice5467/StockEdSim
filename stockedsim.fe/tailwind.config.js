@@ -9,7 +9,12 @@ module.exports = {
         "./node_modules/tw-elements-react/dist/js/**/*.js"
     ],
     theme: {
-        extend: {},
+        extend: {
+            height: {
+                '3/40': '7.5%',
+                '37/40': '92.5%',
+            }
+        },
     },
     darkMode: "class",
     plugins: [require("tw-elements-react/dist/plugin.cjs")]

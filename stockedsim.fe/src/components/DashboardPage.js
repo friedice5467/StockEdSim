@@ -100,13 +100,13 @@ function DashboardPage() {
     };
 
     return (
-        <div className="flex flex-col h-screen bg-gray-100">
-            <header className="w-full bg-blue-600 p-4 text-white">
+        <div className="flex flex-col h-full bg-gray-100">
+            <header className="w-full bg-blue-600 p-4 text-white h-3/40">
                 StockEdSim
                 <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded float-right" onClick={logout}>Logout</button>
                 <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded float-right me-3" onClick={() => setshowJoinClassModal(true)}>Join Class</button>
             </header>
-            <div className="flex flex-1">
+            <div className="flex flex-1 h-37/40">
                 <aside className="bg-gray-800 p-4 pt-16 h-full">
                 <nav>
                     <ul className="space-y-2 text-white">
@@ -130,7 +130,7 @@ function DashboardPage() {
                                 {classes.map((classItem) => (
                                     <div key={classItem.id}>
                                         <a href={`#class-${classItem.id}`} onClick={(e) => toggleSubAccordion(classItem.id)}
-                                            className="block p-2 bg-blue-500 rounded hover:bg-blue-600">{classItem.name}</a>
+                                            className="block p-2 bg-blue-500 rounded hover:bg-blue-600">{classItem.className}</a>
 
                                         <TECollapse show={activeSubClass === classItem.id}>
                                             <ul>
@@ -155,7 +155,7 @@ function DashboardPage() {
                     </ul>
                 </nav>
                 </aside>
-                <main className="flex-1 p-10 bg-gray-100">
+                <main className="flex-1 p-5 bg-gray-100 h-full">
                     {renderMainContent()}
                 </main>
             </div>

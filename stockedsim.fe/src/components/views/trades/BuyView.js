@@ -76,17 +76,7 @@ function BuyView({ classesData, classId }) {
     };
 
     return (
-        <div className="flex">
-            <aside className="w-72 p-4 bg-gray-800 text-white overflow-y-auto">
-                <input type="text" placeholder="Search..." className="mb-4 p-2 w-full rounded" />
-                <ul>
-                    {stocks.map(stock => (
-                        <li key={stock.symbol} onClick={() => handleStockClick(stock.symbol)} className="mb-2 cursor-pointer hover:bg-gray-700 rounded p-2 truncate">
-                            <strong>{stock.symbol}</strong>: {stock.description}
-                        </li>
-                    ))}
-                </ul>
-            </aside>
+        <div className="flex h-full">
 
             <div className="flex-1 p-4">
                 {chartData.length > 0 && (
@@ -122,6 +112,16 @@ function BuyView({ classesData, classId }) {
                     </ChartCanvas>
                 )}
             </div>
+            <aside className="w-72 p-4 bg-gray-800 text-white">
+                <input type="text" placeholder="Search..." className="mb-4 p-2 w-full rounded" />
+                <ul className="overflow-y-auto h-37/40">
+                    {stocks.map(stock => (
+                        <li key={stock.symbol} onClick={() => handleStockClick(stock.symbol)} className="mb-2 cursor-pointer hover:bg-gray-700 rounded p-2 truncate">
+                            <strong>{stock.symbol}</strong>: {stock.description}
+                        </li>
+                    ))}
+                </ul>
+            </aside>
             <BuyViewModal stockSymbol={stockSymbol} classesData={classesData} classId={classId} />
 
             {isLoading && <LoadingModal />}
