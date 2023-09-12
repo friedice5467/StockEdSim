@@ -27,11 +27,16 @@ function ClassesView() {
         }
     }, [currentUser]);
 
-    const handleCreateClass = (className) => {
+    const handleCreateClass = (className, defaultValue) => {
         setLoading(true);
-        api.post("/market/myclasses/createClass", { ClassName: className })
+        api.post("/market/myclasses/createClass",
+            {
+                ClassName: className,
+                TeacherId: currentUser.userId,
+                DefaultBalance: defaultValue
+            })
             .then(response => {
-                setClasses(prev => [...prev, response.data]);
+                setClasses(prev => Array.isArray(prev) ? [...prev, response.data] : [response.data]);
                 setShowAddModal(false);
                 setLoading(false);
             })
@@ -57,11 +62,11 @@ function ClassesView() {
             )}
 
             <ul>
-                {classes.map(cls => (
+                {classes && classes.length > 0 && classes.map(cls => (
                     <li key={cls.Id}>
                         <h3 className="text-xl">{cls.ClassName}</h3>
                         <ul>
-                            {cls.Students && cls.Students.map(student => (
+                            {cls.Students && cls.Students.length > 0 && cls.Students.map(student => (
                                 <li key={student.StudentId}>
                                     {student.StudentName} - Profit: {student.Profit} - Transactions: {student.TransactionsCount}
                                 </li>
@@ -70,6 +75,7 @@ function ClassesView() {
                     </li>
                 ))}
             </ul>
+
 
             {showAddModal && <AddClassModal onClose={() => setShowAddModal(false)} onCreate={handleCreateClass} />}
             <ApiExceptionModal error={apiError} onClose={() => setApiError(null)} />

@@ -5,6 +5,8 @@ using StockEdSim.Api.Db;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System.Security.Claims;
+using StockEdSim.Api.Model.Dto;
+using AutoMapper;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -13,12 +15,14 @@ public class MarketController : ControllerBase
 {
     private readonly string _finnhubKey = string.Empty;
     private static readonly HttpClient client = new HttpClient();
-    private readonly AppDbContext _context;
+    private readonly AppDbContext _dbcontext;
+    private readonly IMapper _mapper;
 
-    public MarketController(IConfiguration configuration, AppDbContext context)
+    public MarketController(IConfiguration configuration, AppDbContext context, IMapper mapper)
     {
         _finnhubKey = configuration["Finnhub:Key"];
-        _context = context;
+        _dbcontext = context;
+        _mapper = mapper;
     }
 
     [HttpGet("symbols")]
@@ -57,7 +61,7 @@ public class MarketController : ControllerBase
     [HttpPost("buy/{classId}")]
     public async Task<IActionResult> BuyStock([FromBody] Stock stockPurchase, [FromRoute] string classId)
     {
-        var student = await _context.Users.FindAsync(stockPurchase.StudentId);
+        var student = await _dbcontext.Users.FindAsync(stockPurchase.StudentId);
         if (student == null)
         {
             return BadRequest("Student not found.");
@@ -81,18 +85,18 @@ public class MarketController : ControllerBase
 
         balance.Balance -= (decimal)currentStockPrice.Value * (decimal)stockPurchase.Amount;
 
-        var existingStock = await _context.Stocks.FindAsync(stockPurchase.StudentId, stockPurchase.StockSymbol);
+        var existingStock = await _dbcontext.Stocks.FindAsync(stockPurchase.StudentId, stockPurchase.StockSymbol);
         if (existingStock != null)
         {
             existingStock.Amount += stockPurchase.Amount;
-            _context.Stocks.Update(existingStock);
+            _dbcontext.Stocks.Update(existingStock);
         }
         else
         {
-            _context.Stocks.Add(stockPurchase);
+            _dbcontext.Stocks.Add(stockPurchase);
         }
 
-        await _context.SaveChangesAsync();
+        await _dbcontext.SaveChangesAsync();
 
         var transaction = new Transaction
         {
@@ -115,7 +119,7 @@ public class MarketController : ControllerBase
     [HttpPost("sell/{classId}")]
     public async Task<IActionResult> SellStock([FromBody] Stock stockSale, [FromRoute] string classId)
     {
-        var student = await _context.Users.FindAsync(stockSale.StudentId);
+        var student = await _dbcontext.Users.FindAsync(stockSale.StudentId);
         if (student == null)
         {
             return BadRequest("Student not found.");
@@ -132,7 +136,7 @@ public class MarketController : ControllerBase
             return BadRequest("Error fetching stock price.");
         }
 
-        var existingStock = await _context.Stocks.FindAsync(stockSale.StudentId, stockSale.StockSymbol);
+        var existingStock = await _dbcontext.Stocks.FindAsync(stockSale.StudentId, stockSale.StockSymbol);
         if (existingStock == null || existingStock.Amount < stockSale.Amount)
         {
             return BadRequest("Not enough stock to sell.");
@@ -143,14 +147,14 @@ public class MarketController : ControllerBase
 
         if (existingStock.Amount == 0)
         {
-            _context.Stocks.Remove(existingStock);
+            _dbcontext.Stocks.Remove(existingStock);
         }
         else
         {
-            _context.Stocks.Update(existingStock);
+            _dbcontext.Stocks.Update(existingStock);
         }
 
-        await _context.SaveChangesAsync();
+        await _dbcontext.SaveChangesAsync();
 
         var transaction = new Transaction
         {
@@ -170,7 +174,7 @@ public class MarketController : ControllerBase
         return Ok("Stock sold successfully.");
     }
 
-    private async Task<double?> GetStockQuote(string symbol)
+    private async Task<decimal?> GetStockQuote(string symbol)
     {
         var url = $"https://finnhub.io/api/v1/quote?symbol={symbol}&token={_finnhubKey}";
 
@@ -179,30 +183,35 @@ public class MarketController : ControllerBase
         {
             var content = await response.Content.ReadAsStringAsync();
             var data = JObject.Parse(content);
-            return data["c"].ToObject<double>();
+            return data["c"].ToObject<decimal>();
         }
 
         return null;
     }
 
     [Authorize(Roles = "Admin,Teacher")]
-    [HttpGet("myclasses/createClass")]
-    public async Task<IActionResult> CreateClassroom([FromBody] Class createClass)
+    [HttpPost("myclasses/createClass")]
+    public async Task<IActionResult> CreateClassroom([FromBody] ClassDTO createClass)
     {
         var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var check = Guid.TryParse(checkThis, out Guid teacherId);
         if (!check)
             return BadRequest("User does not exist");
 
-        await _context.Classes.AddAsync(new Class()
+        var newClass = new Class()
         {
             Id = Guid.NewGuid(),
             ClassName = createClass.ClassName,
             TeacherId = teacherId,
-        });
+            DefaultBalance = createClass.DefaultBalance
+        };
 
-        return Ok(createClass);
+        await _dbcontext.Classes.AddAsync(newClass);
+        await _dbcontext.SaveChangesAsync(); 
+
+        return Ok(newClass);
     }
+
 
     [Authorize(Roles = "Admin,Teacher")]
     [HttpGet("myclasses/students")]
@@ -213,22 +222,22 @@ public class MarketController : ControllerBase
         if (!check)
             return BadRequest("User does not exist");
 
-        var classes = await _context.Classes.Where(c => c.TeacherId == teacherId).ToListAsync();
+        var classes = await _dbcontext.Classes.Where(c => c.TeacherId == teacherId).ToListAsync();
 
         var result = new Dictionary<Guid, List<StudentData>>();
 
         foreach (var classItem in classes)
         {
-            var studentData = await _context.UserClasses
+            var studentData = await _dbcontext.UserClasses
                             .Where(uc => uc.ClassId == classItem.Id)
                             .Select(uc => new StudentData
                             {
                                 StudentId = uc.UserId,
                                 StudentName = uc.User.FullName ?? string.Empty,
-                                Profit = _context.Transactions
+                                Profit = _dbcontext.Transactions
                                                  .Where(t => t.StudentId == uc.UserId)
                                                  .Sum(t => t.PriceAtTransaction * t.Amount),
-                                TransactionsCount = _context.Transactions
+                                TransactionsCount = _dbcontext.Transactions
                                                  .Where(t => t.StudentId == uc.UserId)
                                                  .Count()
                             })
@@ -250,7 +259,7 @@ public class MarketController : ControllerBase
         if (!check) 
             return BadRequest("invalid user ID");
 
-        var data = await _context.Users.Where(u => u.Id == guidId)
+        var data = await _dbcontext.Users.Where(u => u.Id == guidId)
             .Select(u => new DashboardData
             {
                 Stocks = u.Stocks.ToList(),
@@ -269,40 +278,75 @@ public class MarketController : ControllerBase
         if (!check)
             return BadRequest("invalid user ID");
 
-        var classes = await _context.UserClasses
+        var classes = await _dbcontext.UserClasses
             .Where(uc => uc.UserId == guidId)
+            .Include(uc => uc.Class)
+                .ThenInclude(c => c.ClassBalances)
             .Select(uc => uc.Class)
             .ToListAsync();
 
-        return Ok(classes);
+        var classesDTO = _mapper.Map<List<ClassDTO>>(classes);
+
+        return Ok(classesDTO);
     }
 
     [HttpPost("joinClass/{classId}")]
-    public async Task<IActionResult> JoinClassById([FromRoute] string classId)
+    public async Task<IActionResult> JoinClassById([FromRoute] Guid classId)
     {
-        var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var check = Guid.TryParse(checkThis, out Guid userId);
-        if (!check)
-            return BadRequest("invalid user ID");
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out Guid userId))
+            return BadRequest("Invalid user ID");
 
-        var getExisting = _context.ClassBalances.Where(x => x.UserId == userId && x.ClassId == Guid.Parse(classId));
-        ClassBalance bal = new();
-        if (getExisting.Any())
-        {
+        if (_dbcontext.UserClasses.Any(x => x.UserId == userId && x.ClassId == classId))
             return BadRequest("User already joined the class");
-        }
-        else
+
+        var targetClass = await _dbcontext.Classes.FindAsync(classId);
+        if (targetClass == null)
+            return NotFound("Class not found");
+
+        using (var transaction = _dbcontext.Database.BeginTransaction())
         {
-            bal = new() 
-            { 
-                UserId = userId,
-                ClassId = Guid.Parse(classId),
-                Balance = _context.Classes.FirstOrDefault(x => x.Id == Guid.Parse(classId))?.DefaultBalance ?? new ClassBalance().Balance
-            };
-            await _context.ClassBalances.AddAsync(bal);
-            _context.SaveChanges();
+            try
+            {
+                var balance = new ClassBalance
+                {
+                    UserId = userId,
+                    ClassId = classId,
+                    Balance = targetClass.DefaultBalance
+                };
+
+                await _dbcontext.ClassBalances.AddAsync(balance);
+
+                var userClass = new UserClass
+                {
+                    ClassId = classId,
+                    UserId = userId
+                };
+
+                await _dbcontext.UserClasses.AddAsync(userClass);
+
+                await _dbcontext.SaveChangesAsync();
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                return BadRequest($"An error occurred while joining the class, {ex.Message}");
+            }
         }
-        return Ok(bal);
+
+        var userClasses = _dbcontext.Users
+            .Include(u => u.UserClasses)
+                .ThenInclude(uc => uc.Class)
+                    .ThenInclude(c => c.ClassBalances)
+            .Where(u => u.Id == userId)
+            .SelectMany(u => u.UserClasses.Select(uc => uc.Class))
+            .ToList();
+
+        var userClassesDTO = _mapper.Map<List<ClassDTO>>(userClasses);
+
+        return Ok(userClassesDTO);
     }
 
     private async Task<bool> LogTransaction(Transaction transaction)
@@ -312,8 +356,8 @@ public class MarketController : ControllerBase
             return false;
         }
 
-        _context.Transactions.Add(transaction);
-        await _context.SaveChangesAsync();
+        _dbcontext.Transactions.Add(transaction);
+        await _dbcontext.SaveChangesAsync();
         return true;
     }
 }

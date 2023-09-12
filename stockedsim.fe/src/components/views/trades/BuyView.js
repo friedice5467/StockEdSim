@@ -9,7 +9,7 @@ import BuyViewModal from './BuyViewModal';
 import { ChartCanvas, Chart, CandlestickSeries, XAxis, YAxis, CrossHairCursor, MouseCoordinateX, MouseCoordinateY, OHLCTooltip, discontinuousTimeScaleProviderBuilder } from "react-financial-charts";
 
 
-function BuyView(classesData, classId) {
+function BuyView({ classesData, classId }) {
     const [stocks, setStocks] = useState([]);
     const [stockSymbol, setStockSymbol] = useState("");
     const [chartData, setChartData] = useState([]);

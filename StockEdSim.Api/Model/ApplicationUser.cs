@@ -6,7 +6,7 @@
         public string? FullName { get; set; }
         public string? Role { get; set; } 
         public string StudentId { get; set; } = string.Empty;
-        public double Balance { get; set; }
+        public decimal Balance { get; set; }
         public virtual ICollection<UserClass> UserClasses { get; set; } = new List<UserClass>();
         public virtual ICollection<Stock> Stocks { get; set; } = new List<Stock>();
         public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();

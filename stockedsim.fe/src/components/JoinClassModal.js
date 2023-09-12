@@ -1,23 +1,17 @@
 import React, { useState } from 'react';
-import CurrencyInput from '../../../helpers/CurrencyInput';
 
-const AddClassModal = ({ onClose, onCreate }) => {
-    const [className, setClassName] = useState('');
-    const [defaultValue, setDefaultValue] = useState(20000);
+const JoinClassModal = ({ onClose, onCreate }) => {
+    const [passedClassId, setPassedClassId] = useState('');
     const [error, setError] = useState(null);
 
     const handleSubmit = () => {
-        if (className.trim() === '') {
-            setError('Class name is required');
-            return;
-        }
-        if (!defaultValue || defaultValue < 0) {
-            setError('A value is required and must be greater than 0');
+        if (passedClassId.trim() === '') {
+            setError('Class ID is required');
             return;
         }
 
         setError(null);
-        onCreate(className, defaultValue);
+        onCreate(passedClassId);
     };
 
     return (
@@ -29,25 +23,15 @@ const AddClassModal = ({ onClose, onCreate }) => {
 
                 <div className="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">Add New Class</h3>
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">Join New Class</h3>
                         <div className="mt-2">
                             <input
                                 type="text"
-                                placeholder="Enter class name"
-                                value={className}
-                                onChange={e => setClassName(e.target.value)}
+                                placeholder="Enter class ID"
+                                value={passedClassId}
+                                onChange={e => setPassedClassId(e.target.value)}
                                 className="border p-2 rounded w-full"
                             />
-                            {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
-                        </div>
-                        <div className="mt-2">
-                            <CurrencyInput
-                                placeholder="Enter a starting balance for students"
-                                value={defaultValue}
-                                onChange={e => setDefaultValue(e.target.value)}
-                                className="border p-2 rounded w-full"
-                            >
-                            </CurrencyInput>
                             {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
                         </div>
                     </div>
@@ -65,4 +49,4 @@ const AddClassModal = ({ onClose, onCreate }) => {
     );
 };
 
-export default AddClassModal;
+export default JoinClassModal;

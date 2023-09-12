@@ -31,8 +31,8 @@ public class IdentityController : ControllerBase
         {
             var user = new ApplicationUser
             {
-                UserName = model.Email,
-                Email = model.Email,
+                UserName = model.Username,
+                Email = model.Username,
                 StudentId = model.StudentId
             };
 

@@ -12,7 +12,11 @@ function BuyViewModal({ classesData, classId, stockSymbol }) {
     const [apiError, setApiError] = useState(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [purchaseAmount, setPurchaseAmount] = useState(0);
-    const currentBalance = classesData.find(cls => cls.id === classId)?.DefaultBalance || 0;
+
+    const classData = classesData.find(cls => cls.id === classId);
+    const currentBalance = classData && classData.classBalances && classData.classBalances.length > 0
+        ? classData.classBalances[0].balance
+        : 0;
 
     const openModal = () => {
         setIsModalOpen(true);

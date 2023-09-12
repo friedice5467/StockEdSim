@@ -4,7 +4,7 @@
     {
         public Guid StudentId { get; set; }
         public string StudentName { get; set; }
-        public double Profit { get; set; }
+        public decimal Profit { get; set; }
         public int TransactionsCount { get; set; }
     }
 
