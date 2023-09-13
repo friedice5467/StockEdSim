@@ -101,13 +101,17 @@ function DashboardPage() {
 
     return (
         <div className="flex flex-col h-full bg-gray-100">
-            <header className="w-full bg-blue-600 p-4 text-white h-3/40">
-                StockEdSim
-                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded float-right" onClick={logout}>Logout</button>
-                <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded float-right me-3" onClick={() => setshowJoinClassModal(true)}>Join Class</button>
+            <header className="w-full bg-blue-600 xs:p-1 sm:p-4 md:p-3 lg:p-3 xl:p-3 text-white">
+                <div className="flex justify-between items-center">
+                    <div className="font-semibold xs:text-lg sm:text-lg md:text-xl lg:text-2xl xl:text-2xl">StockEdSim</div>
+                    <div className="flex">
+                        <button className="truncate bg-green-500 hover:bg-green-700 sm:text-base sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold py-1 px-2 sm:px-3 md:px-4 rounded mr-3" onClick={() => setshowJoinClassModal(true)}>Join Class</button>
+                        <button className="truncate bg-red-500 hover:bg-red-700  sm:text-base sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold py-1 px-2 sm:px-3 md:px-4 rounded" onClick={logout}>Logout</button>
+                    </div>
+                </div>
             </header>
             <div className="flex flex-1 h-37/40">
-                <aside className="bg-gray-800 p-4 pt-16 h-full">
+                <aside className="bg-gray-800 p-4 pt-16 h-full sm:w-36 md:w-36 lg:w-36 overflow-y-auto">
                 <nav>
                     <ul className="space-y-2 text-white">
                         {(userRole === "Teacher" || userRole === "Admin") && (
@@ -120,23 +124,23 @@ function DashboardPage() {
                                 <a href="#myclasses" onClick={(e) => toggleAccordion('myclasses')}
                                     className="block p-2 bg-blue-600 rounded hover:bg-blue-700 relative">
                                     My Classes
-                                    <span className={`${activeClass === 'myclasses' ? 'rotate-180' : ''} absolute right-0 ml-auto mr-[0.8rem] transition-transform duration-300 ease-linear motion-reduce:transition-none h-3 w-3 text-gray-600 dark:text-gray-300`}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-full w-full">
+                                    <span className={`${activeClass === 'myclasses' ? 'rotate-180' : ''} absolute left-50 transition-transform duration-300 ease-linear motion-reduce:transition-none h-6 w-4 text-white-600 dark:text-gray-300`}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-full w-full">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
                                         </svg>
                                     </span>
                                 </a>
                             <TECollapse show={activeClass === 'myclasses'}>
                                 {classes.map((classItem) => (
-                                    <div key={classItem.id}>
+                                    <div key={classItem.id} className="ml-3">
                                         <a href={`#class-${classItem.id}`} onClick={(e) => toggleSubAccordion(classItem.id)}
-                                            className="block p-2 bg-blue-500 rounded hover:bg-blue-600">{classItem.className}</a>
+                                            className="block p-2 bg-blue-500 rounded hover:bg-blue-600 truncate w-full">{classItem.className}</a>
 
                                         <TECollapse show={activeSubClass === classItem.id}>
-                                            <ul>
+                                            <ul className="ml-3">
                                                 <li>
                                                     <a href="#buy" onClick={(e) => handleNavigationClick(e, 'buyView', classItem.id)}
-                                                        className="block p-2 pl-6 bg-blue-400 rounded hover:bg-blue-500">Buy</a>
+                                                        className="block p-2 pl-6 bg-blue-400 rounded hover:bg-blue-500 mb-1">Buy</a>
                                                 </li>
                                                 <li>
                                                     <a href="#sell" onClick={(e) => handleNavigationClick(e, 'sellView', classItem.id)}
@@ -155,7 +159,7 @@ function DashboardPage() {
                     </ul>
                 </nav>
                 </aside>
-                <main className="flex-1 p-5 bg-gray-100 h-full">
+                <main className="flex-1 p-5 bg-gray-100 h-full overflow-y-auto">
                     {renderMainContent()}
                 </main>
             </div>
