@@ -6,12 +6,17 @@ import BuyViewModal from './BuyViewModal';
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
 import NoDataToDisplay from 'highcharts/modules/no-data-to-display';
+import { FixedSizeList as List } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import debounce from 'lodash/debounce';
 
 NoDataToDisplay(Highcharts);
 
 Highcharts.setOptions({
     lang: {
-        noData: "No data available, select a stock to continue"
+        noData: "No data available, select a stock to continue",
+        rangeSelectorFrom: 'From',
+        rangeSelectorTo: 'To'
     }
 });
 
@@ -19,56 +24,19 @@ function BuyView({ classesData, classId }) {
     const [stocks, setStocks] = useState([]);
     const [stockSymbol, setStockSymbol] = useState("");
     const [stockName, setStockName] = useState("");
+    const [searchStockStr, setSearchStockStr] = useState("");
+    const [filteredStocks, setFilteredStocks] = useState(stocks);
     const [chartData, setChartData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
     const [isFirstRun, setIsFirstRun] = useState(true);
 
-    useEffect(() => {
-        async function fetchStocks() {
-            try {
-                setIsLoading(true);
-                const response = await api.get("/market/symbols");
-                setStocks(response.data);
-            } catch (error) {
-                setApiError("Error fetching stock symbols.");
-            } finally {
-                setIsFirstRun(false);
-                setIsLoading(false);
-            }
-        }
-        if (isFirstRun) fetchStocks();
-    }, [isFirstRun]);
-
-    const handleStockClick = async (symbol, description) => {
-        try {
-            setIsLoading(true);
-            const response = await api.get(`/market/candle/${symbol}`);
-            if (response.data.s === "ok") {
-                const mappedData = response.data.t.map((timestamp, index) => ({
-                    date: new Date(timestamp * 1000),
-                    o: response.data.o[index],
-                    h: response.data.h[index],
-                    l: response.data.l[index],
-                    c: response.data.c[index],
-                    v: response.data.v[index]
-                }));
-                setChartData(mappedData);
-                setStockSymbol(symbol);
-                setStockName(description);
-            } else {
-                setApiError("No data for stock candles.");
-            }
-        } catch (error) {
-            setApiError("Error fetching stock candles.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     const options = {
         title: {
             text: `${stockSymbol}: ${stockName}`
+        },
+        scrollbar: {
+            enabled: false
         },
         series: [
             {
@@ -103,6 +71,37 @@ function BuyView({ classesData, classId }) {
             offset: 0
         }],
         rangeSelector: {
+            buttonTheme: {
+                fill: 'none',
+                stroke: 'none',
+                'stroke-width': 0,
+                r: 8,
+                style: {
+                    color: '#039',
+                    fontWeight: 'bold'
+                },
+                states: {
+                    hover: {
+                    },
+                    select: {
+                        fill: '#039',
+                        style: {
+                            color: 'white'
+                        }
+                    }
+                }
+            },
+            inputBoxBorderColor: 'gray',
+            inputBoxWidth: 120,
+            inputBoxHeight: 18,
+            inputStyle: {
+                color: '#039',
+                fontWeight: 'bold'
+            },
+            labelStyle: {
+                color: 'silver',
+                fontWeight: 'bold'
+            },
             selected: 6
         },
         noData: {
@@ -118,6 +117,72 @@ function BuyView({ classesData, classId }) {
             useHTML: true,
             attr: { 'class': 'customNoData' }
         }
+    };
+
+    useEffect(() => {
+        async function fetchStocks() {
+            try {
+                setIsLoading(true);
+                const response = await api.get("/market/symbols");
+                setStocks(response.data);
+                setFilteredStocks(response.data.sort((a, b) => a.symbol.localeCompare(b.symbol)));
+            } catch (error) {
+                setApiError("Error fetching stock symbols.");
+            } finally {
+                setIsFirstRun(false);
+                setIsLoading(false);
+            }
+        }
+        if (isFirstRun) fetchStocks();
+    }, [isFirstRun]);
+
+    const debouncedSearchStocks = debounce((value) => {
+        if (value.trim() === '') {
+            setFilteredStocks(stocks.sort((a, b) => a.symbol.localeCompare(b.symbol)));
+            return;
+        }
+        const lowercasedValue = value.toLowerCase();
+        const results = stocks.filter(stock => {
+            return stock.symbol.toLowerCase().includes(lowercasedValue) || stock.description.toLowerCase().includes(lowercasedValue);
+        });
+
+        setFilteredStocks(results.sort((a, b) => a.symbol.localeCompare(b.symbol)));
+    }, 300);  // 300ms delay
+
+    const handleStockClick = async (symbol, description) => {
+        try {
+            setIsLoading(true);
+            const response = await api.get(`/market/candle/${symbol}`);
+            if (response.data.s === "ok") {
+                const mappedData = response.data.t.map((timestamp, index) => ({
+                    date: new Date(timestamp * 1000),
+                    o: response.data.o[index],
+                    h: response.data.h[index],
+                    l: response.data.l[index],
+                    c: response.data.c[index],
+                    v: response.data.v[index]
+                }));
+
+                setChartData(mappedData);
+                setStockSymbol(symbol);
+                setStockName(description);
+            } else {
+                setApiError("No data for stock candles.");
+            }
+        } catch (error) {
+            setApiError("Error fetching stock candles.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const Row = ({ index, style }) => {
+        const stock = filteredStocks[index];
+        return (
+            <li style={style} key={stock.symbol} onClick={() => handleStockClick(stock.symbol, stock.description)} className="mb-2 cursor-pointer hover:bg-gray-700 rounded p-2 truncate">
+                <strong>{stock.symbol}</strong>: {stock.description}
+            </li>
+        );
     };
 
     const latestStockPrice = chartData.length > 0 ? chartData[chartData.length - 1].c : null;
@@ -154,6 +219,7 @@ function BuyView({ classesData, classId }) {
                         </>
                     }
                 </div>
+
                 <HighchartsReact
                     highcharts={Highcharts}
                     containerProps={{ style: { height: "92%", width: "auto" } }}
@@ -162,23 +228,35 @@ function BuyView({ classesData, classId }) {
                 />
             </div>
 
-            {/* Side Area (Aside) */}
+            {/* Side Area */}
             <aside className="w-72 p-4 bg-gray-800 text-white h-full">
                 <input
                     type="text"
                     placeholder="Search..."
-                    className="mb-4 p-2 w-full rounded-lg focus:ring focus:ring-green-400 focus:outline-none"
+                    className="mb-4 p-2 w-full rounded-lg focus:ring focus:ring-green-400 focus:outline-none text-black"
+                    value={searchStockStr}
+                    onChange={e => {
+                        setSearchStockStr(e.target.value);
+                        debouncedSearchStocks(e.target.value);
+                    }}
                 />
-                <ul className="overflow-y-auto" style={{height: "93%"}}>
-                    {stocks.sort((a, b) => a.symbol.localeCompare(b.symbol)).map(stock => (
-                        <li key={stock.symbol} onClick={() => handleStockClick(stock.symbol, stock.description)} className="mb-2 cursor-pointer hover:bg-gray-700 rounded p-2 truncate">
-                            <strong>{stock.symbol}</strong>: {stock.description}
-                        </li>
-                    ))}
-                </ul>
+                <div style={{ height: "93%" }}>
+                    <AutoSizer>
+                        {({ height, width }) => (
+                            <List
+                                height={height}
+                                width={width}
+                                itemCount={filteredStocks.length}
+                                itemSize={35}
+                            >
+                                {Row}
+                            </List>
+                        )}
+                    </AutoSizer>
+                </div>
+
             </aside>
 
-            {/* Modals */}
             {isLoading && <LoadingModal />}
             {apiError && <ApiExceptionModal error={apiError} onClose={() => setApiError(null)} />}
         </div>

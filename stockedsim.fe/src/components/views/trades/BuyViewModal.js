@@ -104,7 +104,7 @@ function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
 
     return (
         <div>
-            <button onClick={openModal} className="truncate bg-purple-500 hover:bg-purple-700 text-md font-bold py-1 px-4 rounded-full text-white flex items-center space-x-2">
+            <button onClick={openModal} className="truncate bg-purple-500 hover:bg-purple-700 text-md font-bold py-1 px-4 rounded text-white flex items-center space-x-2">
                 Buy {stockSymbol} at ${stockPrice?.toFixed(2) ?? 0}
             </button>
 
