@@ -1,179 +1,122 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../../../helpers/api';
 import LoadingModal from '../../LoadingModal';
 import ApiExceptionModal from '../../ApiExceptionModal';
 import BuyViewModal from './BuyViewModal';
-import { createChart } from 'lightweight-charts';
+import Highcharts from 'highcharts/highstock';
+import HighchartsReact from 'highcharts-react-official';
+import NoDataToDisplay from 'highcharts/modules/no-data-to-display';
+
+NoDataToDisplay(Highcharts);
+
+Highcharts.setOptions({
+    lang: {
+        noData: "No data available, select a stock to continue"
+    }
+});
 
 function BuyView({ classesData, classId }) {
     const [stocks, setStocks] = useState([]);
     const [stockSymbol, setStockSymbol] = useState("");
     const [stockName, setStockName] = useState("");
     const [chartData, setChartData] = useState([]);
-    const chartRef = useRef(null);
-    const lineSeriesRef = useRef(null);  
-    const [chart, setChart] = useState(null);
-    const lastAverageRef = useRef(null);
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
     const [isFirstRun, setIsFirstRun] = useState(true);
 
-    const updateBaseValueForVisibleRange = useCallback((visibleRange) => {
-        if (visibleRange && lineSeriesRef.current) {
-            const fromTimestamp = new Date(visibleRange.from.year, visibleRange.from.month - 1, visibleRange.from.day).getTime() / 1000;
-            const toTimestamp = new Date(visibleRange.to.year, visibleRange.to.month - 1, visibleRange.to.day).getTime() / 1000;
-
-            const visibleData = chartData.filter(data => {
-                const dateValue = data.date.getTime() / 1000;
-                return dateValue >= fromTimestamp && dateValue <= toTimestamp;
-            });
-
-            if (visibleData.length > 0) {
-                const averageVisiblePrice = visibleData.reduce((sum, data) => sum + data.c, 0) / visibleData.length;
-                if (lastAverageRef.current === null || Math.abs(lastAverageRef.current - averageVisiblePrice) > 0.01) {
-                    lastAverageRef.current = averageVisiblePrice;
-
-                    chart.removeSeries(lineSeriesRef.current);
-
-                    lineSeriesRef.current = chart.addBaselineSeries({
-                        baseValue: { type: 'price', price: averageVisiblePrice },
-                        topLineColor: 'rgba( 38, 166, 154, 1)',
-                        topFillColor1: 'rgba( 38, 166, 154, 0.28)',
-                        topFillColor2: 'rgba( 38, 166, 154, 0.05)',
-                        bottomLineColor: 'rgba( 239, 83, 80, 1)',
-                        bottomFillColor1: 'rgba( 239, 83, 80, 0.05)',
-                        bottomFillColor2: 'rgba( 239, 83, 80, 0.28)'
-                    });
-                    lineSeriesRef.current.setData(chartData.map(data => ({
-                        time: data.date.toISOString().split('T')[0],
-                        value: data.c,
-                    })));
-                }
-            }
-        }
-    }, [chartData, chart]);
-
     useEffect(() => {
-        const fetchStocks = async () => {
+        async function fetchStocks() {
             try {
-                if (!isFirstRun) return;
                 setIsLoading(true);
                 const response = await api.get("/market/symbols");
                 setStocks(response.data);
             } catch (error) {
-                console.error("Error fetching stock symbols:", error);
                 setApiError("Error fetching stock symbols.");
             } finally {
                 setIsFirstRun(false);
                 setIsLoading(false);
             }
-        };
-
-        fetchStocks();
-
-        const handleResize = () => {
-            if (chart && chartRef.current) {
-                chart.resize(chartRef.current.clientWidth, chartRef.current.clientHeight);
-            }
-        };
-
-        if (!chart && chartRef.current) {
-            const newChart = createChart(chartRef.current, {
-                width: chartRef.current.clientWidth,
-                height: chartRef.current.clientHeight,
-                layout: {
-                    backgroundColor: '#ffffff',
-                    textColor: '#333',
-                },
-                grid: {
-                    vertLines: {
-                        color: '#e2e5e8',
-                    },
-                    horzLines: {
-                        color: '#e2e5e8',
-                    },
-                },
-                rightPriceScale: {
-                    scaleMargins: {
-                        top: 0.2,
-                        bottom: 0.2,
-                    },
-                },
-            });
-            setChart(newChart);
         }
-
-        if (chart && chartData.length > 0) {
-            const averagePrice = chartData.reduce((sum, data) => sum + data.c, 0) / chartData.length;
-
-            if (!lineSeriesRef.current) {
-                lineSeriesRef.current = chart.addBaselineSeries({
-                    baseValue: { type: 'price', price: averagePrice },
-                    topLineColor: 'rgba( 38, 166, 154, 1)',
-                    topFillColor1: 'rgba( 38, 166, 154, 0.28)',
-                    topFillColor2: 'rgba( 38, 166, 154, 0.05)',
-                    bottomLineColor: 'rgba( 239, 83, 80, 1)',
-                    bottomFillColor1: 'rgba( 239, 83, 80, 0.05)',
-                    bottomFillColor2: 'rgba( 239, 83, 80, 0.28)'
-                });
-            }
-
-            lineSeriesRef.current.setData(chartData.map(data => ({
-                time: data.date.toISOString().split('T')[0],
-                value: data.c,
-            })));
-
-            const oneMonthAgo = new Date();
-            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-            chart.timeScale().setVisibleRange({
-                from: oneMonthAgo.toISOString().split('T')[0],
-                to: new Date().toISOString().split('T')[0],
-            });
-
-            const handleVisibleTimeRangeChange = (newVisibleTimeRange) => {
-                if (newVisibleTimeRange) {
-                    updateBaseValueForVisibleRange(newVisibleTimeRange);
-                }
-            };
-
-            const unsubscribe = chart.timeScale().subscribeVisibleTimeRangeChange(handleVisibleTimeRangeChange);
-
-            return () => {
-                unsubscribe();
-                window.removeEventListener('resize', handleResize);
-            }
-        }
-
-        window.addEventListener('resize', handleResize);
-
-    }, [chartData, chart, isFirstRun, updateBaseValueForVisibleRange]);
+        if (isFirstRun) fetchStocks();
+    }, [isFirstRun]);
 
     const handleStockClick = async (symbol, description) => {
         try {
             setIsLoading(true);
             const response = await api.get(`/market/candle/${symbol}`);
-
             if (response.data.s === "ok") {
-                const { t, ...priceData } = response.data;
-                const mappedData = t.map((timestamp, index) => {
-                    const entry = { date: new Date(timestamp * 1000) };
-                    Object.keys(priceData).forEach(key => {
-                        entry[key] = priceData[key][index];
-                    });
-                    return entry;
-                });
+                const mappedData = response.data.t.map((timestamp, index) => ({
+                    date: new Date(timestamp * 1000),
+                    o: response.data.o[index],
+                    h: response.data.h[index],
+                    l: response.data.l[index],
+                    c: response.data.c[index],
+                    v: response.data.v[index]
+                }));
                 setChartData(mappedData);
                 setStockSymbol(symbol);
                 setStockName(description);
             } else {
-                console.error("No data for stock candles:", symbol);
                 setApiError("No data for stock candles.");
             }
         } catch (error) {
-            console.error("Error fetching stock candles:", error);
             setApiError("Error fetching stock candles.");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const options = {
+        title: {
+            text: `${stockSymbol}: ${stockName}`
+        },
+        series: [
+            {
+                type: 'ohlc',
+                name: `${stockSymbol} Stock Price`,
+                data: chartData.map(item => [item.date.getTime(), item.o, item.h, item.l, item.c]),
+                tooltip: {
+                    valueDecimals: 2
+                }
+            },
+            {
+                type: 'column',
+                name: 'Volume',
+                data: chartData.map(item => [item.date.getTime(), item.v]),
+                yAxis: 1,
+            },
+        ],
+        yAxis: [{
+            labels: {
+                align: 'left'
+            },
+            height: '80%',
+            resize: {
+                enabled: true
+            }
+        }, {
+            labels: {
+                align: 'left'
+            },
+            top: '80%',
+            height: '20%',
+            offset: 0
+        }],
+        rangeSelector: {
+            selected: 6
+        },
+        noData: {
+            position: {
+                align: 'center',
+                verticalAlign: 'middle'
+            },
+            style: {
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                color: '#303030'
+            },
+            useHTML: true,
+            attr: { 'class': 'customNoData' }
         }
     };
 
@@ -183,48 +126,59 @@ function BuyView({ classesData, classId }) {
 
     return (
         <div className="flex h-full">
+
+            {/* HighchartsReact Area */}
             <div className="flex-1 pt-2 px-4 h-full">
-                {chartData.length > 0 && (
-                    <div className="h-full flex flex-col">
-                        <div className="flex justify-between items-center mb-2">
-                            <div>
-                                <h2 className="text-xl font-bold">{stockSymbol}</h2>
-                                <p className="text-gray-600 truncate">{stockName}</p>
-                            </div>
-                            <div className="flex items-center space-x-4">
-                                <div className="bg-green-500 text-white px-4 py-1 rounded-full text-md flex items-center space-x-2">
+                {/* Top Bar with Pills and BuyViewModal */}
+                <div className="flex justify-between items-center w-full px-4 mb-2" style={{ height: "7%" }}>
+                    {
+                        stockSymbol && latestStockPrice &&
+                        <>
+                            <div className="flex space-x-4">
+                                <div className="bg-green-500 text-white px-4 py-1 rounded-lg text-md flex items-center space-x-2">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                                         <path d="M8 1L3 6h10L8 1z"></path>
                                     </svg>
-                                    <span>1 YR ATH: ${allTimeHigh.toFixed(2)}</span>
+                                    <span>1 YR ATH: ${allTimeHigh?.toFixed(2) ?? ''}</span>
                                 </div>
-                                <div className="bg-red-500 text-white px-4 py-1 rounded-full text-md flex items-center space-x-2">
+                                <div className="bg-red-500 text-white px-4 py-1 rounded-lg text-md flex items-center space-x-2">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                                         <path d="M8 15L3 10h10l-5 5z"></path>
                                     </svg>
-                                    <span>1YR ATL: ${allTimeLow.toFixed(2)}</span>
+                                    <span>1YR ATL: ${allTimeLow?.toFixed(2) ?? ''}</span>
                                 </div>
+                            </div>
+                            <div className="ml-auto">
                                 <BuyViewModal stockSymbol={stockSymbol} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
                             </div>
-                        </div>
-                        <div ref={chartRef} className="flex-grow" />
-                    </div>
-                )}
+                        </>
+                    }
+                </div>
+                <HighchartsReact
+                    highcharts={Highcharts}
+                    containerProps={{ style: { height: "92%", width: "auto" } }}
+                    constructorType={'stockChart'}
+                    options={options}
+                />
             </div>
 
-            <aside className="w-72 p-4 bg-gray-800 text-white">
-                <input type="text" placeholder="Search..." className="mb-4 p-2 w-full rounded" />
-                <ul className="overflow-y-auto h-37/40">
-                    {stocks
-                        .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                        .map(stock => (
-                            <li key={stock.symbol} onClick={() => handleStockClick(stock.symbol, stock.description)} className="mb-2 cursor-pointer hover:bg-gray-700 rounded p-2 truncate">
-                                <strong>{stock.symbol}</strong>: {stock.description}
-                            </li>
-                        ))}
+            {/* Side Area (Aside) */}
+            <aside className="w-72 p-4 bg-gray-800 text-white h-full">
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    className="mb-4 p-2 w-full rounded-lg focus:ring focus:ring-green-400 focus:outline-none"
+                />
+                <ul className="overflow-y-auto" style={{height: "93%"}}>
+                    {stocks.sort((a, b) => a.symbol.localeCompare(b.symbol)).map(stock => (
+                        <li key={stock.symbol} onClick={() => handleStockClick(stock.symbol, stock.description)} className="mb-2 cursor-pointer hover:bg-gray-700 rounded p-2 truncate">
+                            <strong>{stock.symbol}</strong>: {stock.description}
+                        </li>
+                    ))}
                 </ul>
             </aside>
 
+            {/* Modals */}
             {isLoading && <LoadingModal />}
             {apiError && <ApiExceptionModal error={apiError} onClose={() => setApiError(null)} />}
         </div>

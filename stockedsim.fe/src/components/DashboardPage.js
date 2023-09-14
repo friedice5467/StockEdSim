@@ -101,16 +101,16 @@ function DashboardPage() {
 
     return (
         <div className="flex flex-col h-full bg-gray-100">
-            <header className="w-full bg-blue-600 xs:p-1 sm:p-4 md:p-3 lg:p-3 xl:p-3 text-white">
+            <header className="w-full bg-blue-600 xs:p-0 sm:p-1 md:p-1 lg:p-3 xl:p-3 text-white max-h-3/40">
                 <div className="flex justify-between items-center">
-                    <div className="font-semibold xs:text-lg sm:text-lg md:text-xl lg:text-2xl xl:text-2xl">StockEdSim</div>
+                    <div className="font-semibold xs:text-xs sm:text-lg md:text-xl lg:text-2xl xl:text-2xl">StockEdSim</div>
                     <div className="flex">
-                        <button className="truncate bg-green-500 hover:bg-green-700 sm:text-base sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold py-1 px-2 sm:px-3 md:px-4 rounded mr-3" onClick={() => setshowJoinClassModal(true)}>Join Class</button>
-                        <button className="truncate bg-red-500 hover:bg-red-700  sm:text-base sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold py-1 px-2 sm:px-3 md:px-4 rounded" onClick={logout}>Logout</button>
+                        <button className="truncate bg-green-500 hover:bg-green-700 xs:text-xs sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold xs:py-0 sm:py-0 lg:py-1 px-2 sm:px-3 md:px-4 rounded mr-3" onClick={() => setshowJoinClassModal(true)}>Join Class</button>
+                        <button className="truncate bg-red-500 hover:bg-red-700  xs:text-xs sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold xs:py-0 sm:py-0 lg:py-1 px-2 sm:px-3 md:px-4 rounded" onClick={logout}>Logout</button>
                     </div>
                 </div>
             </header>
-            <div className="flex flex-1 h-37/40">
+            <div className="flex flex-1 max-h-37/40">
                 <aside className="bg-gray-800 p-4 pt-16 h-full sm:w-36 md:w-36 lg:w-36 overflow-y-auto">
                 <nav>
                     <ul className="space-y-2 text-white">

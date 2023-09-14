@@ -4,6 +4,7 @@ import { useAuth } from '../../../helpers/AuthContext';
 import LoadingModal from '../../LoadingModal';
 import ApiExceptionModal from '../../ApiExceptionModal';
 import ConfirmationModal from '../../ConfirmationModal';
+import CurrencyInput from '../../../helpers/CurrencyInput';
 
 function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
     const { currentUser } = useAuth();
@@ -11,14 +12,17 @@ function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-    const [purchaseAmount, setPurchaseAmount] = useState(0);
+    const [amount, setAmount] = useState('');
+    const [isCurrency, setIsCurrency] = useState(true);  
 
     const classData = classesData.find(cls => cls.id === classId);
     const currentBalance = classData && classData.classBalances && classData.classBalances.length > 0
         ? classData.classBalances[0].balance
         : 0;
 
-    const maxStocks = (currentBalance / stockPrice).toFixed(2);
+    const expectedBalanceAfterPurchase = isCurrency
+        ? (currentBalance - parseFloat(amount) || currentBalance).toFixed(2)
+        : (currentBalance - (amount * stockPrice) || currentBalance).toFixed(2);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -28,17 +32,32 @@ function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
         setIsModalOpen(false);
     };
 
-    const setMaxAmount = () => {
-        setPurchaseAmount(maxStocks);
+    const toggleConversion = (isConverter) => {
+        if (isCurrency) {
+            const amountInStocks = (parseFloat(amount) / stockPrice).toFixed(2);
+            setAmount(amountInStocks);
+        } else {
+            const amountInCurrency = (parseFloat(amount) * stockPrice).toFixed(2);
+            setAmount(amountInCurrency);
+        }
+        if (isConverter) {
+            setIsCurrency(!isCurrency);
+        }
     };
 
-    const validateInput = () => {
-        const amount = parseFloat(purchaseAmount);
-        if (amount <= 0 || amount > maxStocks) {
-            return { valid: false, error: "Invalid purchase amount." };
+    const updateExpectedBalance = (value) => {
+        if (value) {
+            const numericValue = parseFloat(value.replace('$', '').replace(/,/g, ''));
+            setAmount(numericValue);
+        } else {
+            setAmount('');
         }
-        if (!stockSymbol) {
-            return { valid: false, error: "Select a stock symbol." };
+    }
+
+    const validateInput = () => {
+        const numericAmount = parseFloat(amount);
+        if (numericAmount <= 0 || (isCurrency && numericAmount > currentBalance) || (!isCurrency && numericAmount * stockPrice > currentBalance)) {
+            return { valid: false, error: "Invalid purchase amount." };
         }
         return { valid: true, error: null };
     };
@@ -58,16 +77,16 @@ function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
 
         const stockPurchaseData = {
             StockSymbol: stockSymbol,
-            Amount: parseFloat(purchaseAmount),
+            Amount: isCurrency ? parseFloat(amount) / stockPrice : parseFloat(amount),
             StudentId: currentUser.userId
         };
 
         try {
             const response = await api.post(`/market/buy/${classId}`, stockPurchaseData);
             if (response.status === 200) {
-
+                // Handle successful purchase here
             } else {
-
+                // Handle other statuses here
             }
         } catch (error) {
             console.error("Error purchasing stock:", error);
@@ -86,7 +105,7 @@ function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
     return (
         <div>
             <button onClick={openModal} className="truncate bg-purple-500 hover:bg-purple-700 text-md font-bold py-1 px-4 rounded-full text-white flex items-center space-x-2">
-                Buy {stockSymbol} at ${stockPrice}
+                Buy {stockSymbol} at ${stockPrice?.toFixed(2) ?? 0}
             </button>
 
             {isModalOpen && (
@@ -101,19 +120,27 @@ function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
                                 <h3 className="text-lg leading-6 font-medium text-gray-900">Buy {stockSymbol}</h3>
                                 <div className="mt-2">
                                     <p>Current balance for the class: ${currentBalance.toFixed(2)}</p>
+                                    <p>Expected balance after purchase: ${expectedBalanceAfterPurchase}</p>
                                     <div className="flex">
-                                        <input
-                                            type="number"
-                                            onChange={e => setPurchaseAmount(e.target.value)}
-                                            value={purchaseAmount}
-                                            className="border p-2 rounded-l-lg w-full"
-                                            placeholder="Enter purchase amount"
-                                            min=".01"
-                                            max={maxStocks}
-                                        />
-                                        <button onClick={setMaxAmount} className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-2 rounded-r-lg">
-                                            MAX
+                                        <button onClick={() => toggleConversion(true)} className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-2 rounded-l-lg">
+                                            Convert to {isCurrency ? stockSymbol : "$"}
                                         </button>
+                                        {isCurrency ? (
+                                            <CurrencyInput
+                                                placeholder={`Enter amount in $`}
+                                                value={amount}
+                                                onChange={e => updateExpectedBalance(e.target.value)}
+                                                className="border p-2 w-full"
+                                            />
+                                        ) : (
+                                            <input
+                                                type="number"
+                                                placeholder={`Enter amount in ${stockSymbol}`}
+                                                value={amount}
+                                                onChange={e => updateExpectedBalance(e.target.value)}
+                                                className="border p-2 w-full"
+                                            />
+                                        )}
                                     </div>
                                     {apiError && <p className="mt-2 text-sm text-red-500">{apiError}</p>}
                                 </div>
