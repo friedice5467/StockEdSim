@@ -178,6 +178,8 @@ function BuyView({ classesData, classId }) {
     };
 
     const latestStockPrice = chartData.length > 0 ? chartData[chartData.length - 1].c : null;
+    const allTimeHigh = chartData.reduce((max, data) => (data.c > max ? data.c : max), -Infinity);
+    const allTimeLow = chartData.reduce((min, data) => (data.c < min ? data.c : min), Infinity);
 
     return (
         <div className="flex h-full">
@@ -189,9 +191,20 @@ function BuyView({ classesData, classId }) {
                                 <h2 className="text-xl font-bold">{stockSymbol}</h2>
                                 <p className="text-gray-600 truncate">{stockName}</p>
                             </div>
-                            <div className="flex items-center">
-                                <div className="text-lg font-bold text-green-500 mr-2">${latestStockPrice}</div>
-                                <BuyViewModal stockSymbol={stockSymbol} classesData={classesData} classId={classId} />
+                            <div className="flex items-center space-x-4">
+                                <div className="bg-green-500 text-white px-4 py-1 rounded-full text-md flex items-center space-x-2">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M8 1L3 6h10L8 1z"></path>
+                                    </svg>
+                                    <span>1 YR ATH: ${allTimeHigh.toFixed(2)}</span>
+                                </div>
+                                <div className="bg-red-500 text-white px-4 py-1 rounded-full text-md flex items-center space-x-2">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M8 15L3 10h10l-5 5z"></path>
+                                    </svg>
+                                    <span>1YR ATL: ${allTimeLow.toFixed(2)}</span>
+                                </div>
+                                <BuyViewModal stockSymbol={stockSymbol} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
                             </div>
                         </div>
                         <div ref={chartRef} className="flex-grow" />

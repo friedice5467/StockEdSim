@@ -3,9 +3,9 @@ import api from '../../../helpers/api';
 import { useAuth } from '../../../helpers/AuthContext';
 import LoadingModal from '../../LoadingModal';
 import ApiExceptionModal from '../../ApiExceptionModal';
-import ConfirmationModal from '../../ConfirmationModal'; 
+import ConfirmationModal from '../../ConfirmationModal';
 
-function BuyViewModal({ classesData, classId, stockSymbol }) {
+function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
     const { currentUser } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +18,8 @@ function BuyViewModal({ classesData, classId, stockSymbol }) {
         ? classData.classBalances[0].balance
         : 0;
 
+    const maxStocks = (currentBalance / stockPrice).toFixed(2);
+
     const openModal = () => {
         setIsModalOpen(true);
     };
@@ -26,9 +28,13 @@ function BuyViewModal({ classesData, classId, stockSymbol }) {
         setIsModalOpen(false);
     };
 
+    const setMaxAmount = () => {
+        setPurchaseAmount(maxStocks);
+    };
+
     const validateInput = () => {
         const amount = parseFloat(purchaseAmount);
-        if (amount <= 0 || amount > currentBalance) {
+        if (amount <= 0 || amount > maxStocks) {
             return { valid: false, error: "Invalid purchase amount." };
         }
         if (!stockSymbol) {
@@ -54,14 +60,14 @@ function BuyViewModal({ classesData, classId, stockSymbol }) {
             StockSymbol: stockSymbol,
             Amount: parseFloat(purchaseAmount),
             StudentId: currentUser.userId
-    };
+        };
 
         try {
             const response = await api.post(`/market/buy/${classId}`, stockPurchaseData);
             if (response.status === 200) {
-                // Handle the successful purchase, maybe show a notification or refresh some data
+
             } else {
-                // Handle any other non-error HTTP status codes if necessary
+
             }
         } catch (error) {
             console.error("Error purchasing stock:", error);
@@ -77,10 +83,11 @@ function BuyViewModal({ classesData, classId, stockSymbol }) {
         closeModal();
     };
 
-
     return (
         <div>
-            <button onClick={openModal}>Buy</button>
+            <button onClick={openModal} className="truncate bg-purple-500 hover:bg-purple-700 text-md font-bold py-1 px-4 rounded-full text-white flex items-center space-x-2">
+                Buy {stockSymbol} at ${stockPrice}
+            </button>
 
             {isModalOpen && (
                 <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -91,17 +98,23 @@ function BuyViewModal({ classesData, classId, stockSymbol }) {
 
                         <div className="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900">Buy Stocks</h3>
+                                <h3 className="text-lg leading-6 font-medium text-gray-900">Buy {stockSymbol}</h3>
                                 <div className="mt-2">
-                                    <p>Current balance for the class: ${currentBalance}</p>
-                                    <input
-                                        type="number"
-                                        onChange={e => setPurchaseAmount(e.target.value)}
-                                        className="border p-2 rounded-lg w-full mb-2"
-                                        placeholder="Enter purchase amount"
-                                        min=".01"
-                                        max={currentBalance}
-                                    />
+                                    <p>Current balance for the class: ${currentBalance.toFixed(2)}</p>
+                                    <div className="flex">
+                                        <input
+                                            type="number"
+                                            onChange={e => setPurchaseAmount(e.target.value)}
+                                            value={purchaseAmount}
+                                            className="border p-2 rounded-l-lg w-full"
+                                            placeholder="Enter purchase amount"
+                                            min=".01"
+                                            max={maxStocks}
+                                        />
+                                        <button onClick={setMaxAmount} className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-2 rounded-r-lg">
+                                            MAX
+                                        </button>
+                                    </div>
                                     {apiError && <p className="mt-2 text-sm text-red-500">{apiError}</p>}
                                 </div>
                             </div>
@@ -135,7 +148,6 @@ function BuyViewModal({ classesData, classId, stockSymbol }) {
             {apiError && <ApiExceptionModal error={apiError} onClose={() => setApiError(null)} />}
         </div>
     );
-
 }
 
 export default BuyViewModal;

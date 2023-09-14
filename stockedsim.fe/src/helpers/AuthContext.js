@@ -30,6 +30,7 @@ export function AuthProvider({ children }) {
         if (initialCurrentUser && initialCurrentUser.exp && Date.now() >= initialCurrentUser.exp * 1000) {
             logout();
         }
+        // eslint-disable-next-line
     }, [initialCurrentUser]);
 
     const value = {
