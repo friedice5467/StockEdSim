@@ -15,6 +15,7 @@ namespace StockEdSim.Api.Db
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<UserClass> UserClasses { get; set; }
         public DbSet<ClassBalance> ClassBalances { get; set; }
+        public DbSet<ApiKey> ApiKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

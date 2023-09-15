@@ -11,6 +11,9 @@ function LoginRegisterPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoginView, setIsLoginView] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [isTeacher, setIsTeacher] = useState(false);
+    const [apiKey, setApiKey] = useState('');
+
     const { setCurrentUser } = useAuth();
     const navigate = useNavigate();
 
@@ -27,6 +30,25 @@ function LoginRegisterPage() {
 
         setIsLoading(true);
 
+        let payload;
+
+        if (isLoginView) {
+            payload = {
+                username,
+                password,
+                isStudentId: false
+            };
+        } else {
+            payload = {
+                Username: username,
+                Password: password,
+                IsTeacher: isTeacher
+            };
+            if (isTeacher) {
+                payload.UsageKey = apiKey;
+            }
+        }
+
         const endpoint = isLoginView
             ? `${process.env.REACT_APP_API_BASE_URL}/identity/login`
             : `${process.env.REACT_APP_API_BASE_URL}/identity/register`;
@@ -36,7 +58,7 @@ function LoginRegisterPage() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, password, isStudentId: false })
+            body: JSON.stringify(payload)
         });
 
         setIsLoading(false);
@@ -49,7 +71,8 @@ function LoginRegisterPage() {
                 setCurrentUser({
                     userId: decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"],
                     email: decodedToken.email,
-                    role: decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+                    role: decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
+                    userClasses: decodedToken.userClasses
                 });
 
                 navigate('/');
@@ -63,11 +86,10 @@ function LoginRegisterPage() {
         }
     }
 
-    const SetterClick = () => {
+    const toggleView = () => {
         setIsLoginView(!isLoginView);
         setPassword("");
     }
-
 
     return (
         <div className="flex justify-center items-center h-full bg-gray-100">
@@ -86,15 +108,39 @@ function LoginRegisterPage() {
                     {!isLoginView && <PasswordStrengthBar password={password} className="mt-2" />}
                 </div>
                 {!isLoginView && (
-                    <div className="mb-3">
-                        <label className="block text-sm sm:text-md text-gray-700">Confirm Password:</label>
-                        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="mt-1 p-2 w-full border rounded-md" />
-                    </div>
+                    <>
+                        <div className="mb-3">
+                            <label className="block text-sm sm:text-md text-gray-700">Confirm Password:</label>
+                            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="mt-1 p-2 w-full border rounded-md" />
+                        </div>
+                        <div className="mb-3">
+                            <label className="block text-sm sm:text-md text-gray-700">
+                                <input
+                                    type="checkbox"
+                                    checked={isTeacher}
+                                    onChange={(e) => setIsTeacher(e.target.checked)}
+                                />
+                                &nbsp;Are you a teacher?
+                            </label>
+                            {isTeacher && (
+                                <div className="mt-2">
+                                    <input
+                                        type="text"
+                                        value={apiKey}
+                                        onChange={(e) => setApiKey(e.target.value)}
+                                        placeholder="Enter your API key"
+                                        required
+                                        className="mt-1 p-2 w-full border rounded-md"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </>
                 )}
                 <button onClick={handleSubmit} className="w-full p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-200 active:bg-blue-800">
                     {isLoginView ? 'Login' : 'Register'}
                 </button>
-                <p className="mt-3 text-center text-sm sm:text-md text-gray-500 hover:text-gray-600 cursor-pointer" onClick={() => SetterClick()}>
+                <p className="mt-3 text-center text-sm sm:text-md text-gray-500 hover:text-gray-600 cursor-pointer" onClick={toggleView}>
                     {isLoginView ? 'Need an account? Register' : 'Have an account? Login'}
                 </p>
             </div>

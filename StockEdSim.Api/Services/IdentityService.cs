@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StockEdSim.Api.Db;
 using StockEdSim.Api.Model;
 using StockEdSim.Api.Services.Abstract;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,19 +15,42 @@ namespace StockEdSim.Api.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly AppDbContext _dbContext;
         private readonly IConfiguration _configuration;
 
         public IdentityService(UserManager<ApplicationUser> userManager,
                                SignInManager<ApplicationUser> signInManager,
-                               IConfiguration configuration)
+                               IConfiguration configuration, AppDbContext dbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _dbContext = dbContext;
         }
 
         public async Task<ServiceResult<string>> RegisterAsync(RegisterModel model)
         {
+            if (model.IsTeacher)
+            {
+                if (string.IsNullOrEmpty(model.UsageKey))
+                {
+                    return ServiceResult<string>.Failure("Usage key is required for teachers", data: null, statusCode: HttpStatusCode.BadRequest);
+                }
+
+                var apiKeyGuid = Guid.TryParse(model.UsageKey, out Guid parsedGuid) ? parsedGuid : Guid.Empty;
+                var apiKey = await _dbContext.ApiKeys.FirstOrDefaultAsync(k => k.Id == apiKeyGuid);
+
+                if (apiKey == null || apiKey.IsUsed)
+                {
+                    return ServiceResult<string>.Failure("Invalid or already used key", data: null, statusCode: HttpStatusCode.BadRequest);
+                }
+
+                apiKey.IsUsed = true;
+                apiKey.UsedDate = DateTime.UtcNow;
+                _dbContext.ApiKeys.Update(apiKey);
+                await _dbContext.SaveChangesAsync();
+            }
+
             var user = new ApplicationUser
             {
                 UserName = model.Username,
@@ -38,7 +62,7 @@ namespace StockEdSim.Api.Services
 
             if (identityResult.Succeeded)
             {
-                var roleStr = string.IsNullOrEmpty(model.UsageKey) ? "Student" : "Teacher";
+                var roleStr = model.IsTeacher ? "Teacher" : "Student";
                 await _userManager.AddToRoleAsync(user, roleStr);
                 return ServiceResult<string>.Success("Registration successful!");
             }

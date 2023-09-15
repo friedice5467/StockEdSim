@@ -6,5 +6,6 @@
         public string StudentId { get; set; } = string.Empty;
         public required string Password { get; set; }
         public string UsageKey { get; set; } = string.Empty;
+        public bool IsTeacher { get; set; }
     }
 }
