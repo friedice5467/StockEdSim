@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StockEdSim.Api.Db;
-using StockEdSim.Api.Db.DbHelper;
 using StockEdSim.Api.Model;
+using StockEdSim.Api.Services.Abstract;
+using StockEdSim.Api.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,6 +51,10 @@ builder.Services.AddAuthentication(x =>
         ValidateAudience = false
     };
 });
+
+//DI
+builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddScoped<IMarketService, MarketService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

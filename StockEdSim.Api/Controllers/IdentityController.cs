@@ -1,102 +1,58 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Mvc;
 using StockEdSim.Api.Model;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using StockEdSim.Api.Services.Abstract;
 
-[Route("api/[controller]")]
-[ApiController]
-public class IdentityController : ControllerBase
+
+namespace StockEdSim.Api.Controllers
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly IConfiguration _configuration;
-
-    public IdentityController(UserManager<ApplicationUser> userManager,
-                              SignInManager<ApplicationUser> signInManager,
-                              IConfiguration configuration)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class IdentityController : ControllerBase
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
-        _configuration = configuration;
-    }
+        private readonly IIdentityService _identityService;
 
-    [HttpPost("Register")]
-    public async Task<IActionResult> Register(RegisterModel model)
-    {
-        if (ModelState.IsValid)
+        public IdentityController(IIdentityService identityService)
         {
-            var user = new ApplicationUser
+            _identityService = identityService;
+        }
+
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register(RegisterModel model)
+        {
+            if (!ModelState.IsValid)
             {
-                UserName = model.Username,
-                Email = model.Username,
-                StudentId = model.StudentId
-            };
-
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (result.Succeeded)
-            {
-                //validate Key here TODO
-                var roleStr = string.IsNullOrEmpty(model.UsageKey) ? "Student" : "Teacher";
-
-                await _userManager.AddToRoleAsync(user, roleStr);
-                return Ok(new { Message = "Registration successful!" });
+                return BadRequest(new { Message = "Model state is not valid" });
             }
 
-            return BadRequest(new { result.Errors });
-        }
-
-        return BadRequest(new { Message = "Model state is not valid" });
-    }
-
-    [HttpPost("Login")]
-    public async Task<IActionResult> Login(LoginModel model)
-    {
-        ApplicationUser? user;
-
-        if (model.IsStudentId)
-        {
-            user = await _userManager.Users.FirstOrDefaultAsync(u => u.StudentId == model.Username);
-        }
-        else
-        {
-            user = await _userManager.FindByEmailAsync(model.Username);
-        }
-
-        if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
-        {
-            var userRoles = await _userManager.GetRolesAsync(user);
-
-            var authClaims = new List<Claim>
+            var result = await _identityService.RegisterAsync(model);
+            if (result.IsSuccess)
             {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
-
-            foreach (var userRole in userRoles)
-            {
-                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                return StatusCode((int)result.StatusCode, result.Message);
             }
 
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-
-            var token = new JwtSecurityToken(
-                expires: DateTime.Now.AddHours(3),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-            );
-
-            return Ok(new
-            {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                expiration = token.ValidTo
-            });
+            return StatusCode((int)result.StatusCode, result.Message);
         }
-        return Unauthorized();
+
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(LoginModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Model state is not valid" });
+            }
+
+            var result = await _identityService.LoginAsync(model);
+
+            if (result.IsSuccess)
+            {
+                return Ok(new
+                {
+                    token = result.Data,
+                    expiration = DateTime.Now.AddHours(3) 
+                });
+            }
+
+            return StatusCode((int)result.StatusCode, result.Message);
+        }
     }
 }
