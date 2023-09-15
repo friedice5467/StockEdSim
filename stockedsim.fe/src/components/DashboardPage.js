@@ -25,6 +25,10 @@ function DashboardPage() {
 
     const [showJoinClassModal, setshowJoinClassModal] = useState(false);
 
+    const handleUpdateClasses = (newClasses) => {
+        setClasses(newClasses);
+    };
+
     useEffect(() => {
         if (currentUser) {
             setIsLoading(true);
@@ -85,7 +89,7 @@ function DashboardPage() {
             case 'classes':
                 return <ClassesView />;
             case 'buyView':
-                return <BuyView classesData={classes} classId={classId} />; 
+                return <BuyView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} />; 
             //case 'sellView':
             //    return <SellView classesData={classes} classId={classId} />;
             // Add more cases as you expand the functionality
@@ -100,7 +104,7 @@ function DashboardPage() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-100">
+        <div className="flex flex-col h-full w-full bg-gray-100">
             <header className="w-full bg-blue-600 xs:p-0 sm:p-1 md:p-1 lg:p-3 xl:p-3 text-white max-h-3/40">
                 <div className="flex justify-between items-center">
                     <div className="font-semibold xs:text-xs sm:text-lg md:text-xl lg:text-2xl xl:text-2xl">StockEdSim</div>
@@ -110,8 +114,8 @@ function DashboardPage() {
                     </div>
                 </div>
             </header>
-            <div className="flex flex-1 max-h-37/40">
-                <aside className="bg-gray-800 p-4 pt-16 h-full sm:w-36 md:w-36 lg:w-36 overflow-y-auto">
+            <div className="flex flex-1 h-37/40">
+                <aside className="bg-gray-800 p-4 pt-16 h-full w-auto sm:w-36 md:w-36 lg:w-36 overflow-y-auto">
                 <nav>
                     <ul className="space-y-2 text-white">
                         {(userRole === "Teacher" || userRole === "Admin") && (
@@ -159,7 +163,7 @@ function DashboardPage() {
                     </ul>
                 </nav>
                 </aside>
-                <main className="flex-1 p-5 bg-gray-100 h-full overflow-y-auto">
+                <main className="flex-1 p-5 bg-gray-100 h-full w-full overflow-y-auto">
                     {renderMainContent()}
                 </main>
             </div>

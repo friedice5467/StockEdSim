@@ -41,21 +41,21 @@ namespace StockEdSim.Api.Controllers
         }
 
         [HttpPost("buy/{classId}")]
-        public async Task<IActionResult> BuyStock([FromBody] Stock stockPurchase, [FromRoute] Guid classId)
+        public async Task<IActionResult> BuyStock([FromBody] StockDTO stockPurchase, [FromRoute] Guid classId)
         {
             var result = await _marketService.BuyStock(stockPurchase, classId);
             if (result.IsSuccess)
-                return Ok(result.Message);
+                return Ok(result.Data);
 
             return StatusCode((int)result.StatusCode, result.Message);
         }
 
         [HttpPost("sell/{classId}")]
-        public async Task<IActionResult> SellStock([FromBody] Stock stockSale, [FromRoute] Guid classId)
+        public async Task<IActionResult> SellStock([FromBody] StockDTO stockSale, [FromRoute] Guid classId)
         {
             var result = await _marketService.SellStock(stockSale, classId);
             if (result.IsSuccess)
-                return Ok(result.Message);
+                return Ok(result.Data);
 
             return StatusCode((int)result.StatusCode, result.Message);
         }

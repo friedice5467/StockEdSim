@@ -12,6 +12,10 @@ namespace StockEdSim.Api
                 .ForMember(dest => dest.ClassBalances, opt => opt.MapFrom(src => src.ClassBalances));
 
             CreateMap<ClassBalance, ClassBalanceDTO>();
+
+            CreateMap<Transaction, TransactionDTO>();
+
+            CreateMap<Stock, StockDTO>();
         }
     }
 }

@@ -9,6 +9,8 @@
         public decimal Amount { get; set; }  
         public decimal PriceAtTransaction { get; set; } 
         public DateTime TransactionDate { get; set; }
+        public Guid ClassId { get; set; }
+        public virtual Class Class { get; set; }
     }
 
 }

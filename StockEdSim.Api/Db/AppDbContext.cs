@@ -26,6 +26,16 @@ namespace StockEdSim.Api.Db
                 .WithMany(t => t.TaughtClasses)
                 .HasForeignKey(c => c.TeacherId);
 
+            modelBuilder.Entity<Stock>()
+                .HasOne(s => s.Class)
+                .WithMany(c => c.Stocks)
+                .HasForeignKey(c => c.ClassId);
+
+            modelBuilder.Entity<Transaction>()
+                .HasOne(s => s.Class)
+                .WithMany(c => c.Transactions)
+                .HasForeignKey(c => c.ClassId);
+
             modelBuilder.Entity<UserClass>()
                 .HasKey(uc => new { uc.UserId, uc.ClassId });
 

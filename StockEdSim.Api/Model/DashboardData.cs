@@ -1,9 +1,11 @@
-﻿namespace StockEdSim.Api.Model
+﻿using StockEdSim.Api.Model.Dto;
+
+namespace StockEdSim.Api.Model
 {
     public class DashboardData
     {
-        public List<Stock> Stocks { get; set; }
-        public List<Transaction> Transactions { get; set; }
-        public List<Class> Classes { get; set; }
+        public List<StockDTO> Stocks { get; set; }
+        public List<TransactionDTO> Transactions { get; set; }
+        public List<ClassDTO> Classes { get; set; }
     }
 }

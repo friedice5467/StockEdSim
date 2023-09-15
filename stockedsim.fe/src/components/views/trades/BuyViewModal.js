@@ -6,7 +6,7 @@ import ApiExceptionModal from '../../ApiExceptionModal';
 import ConfirmationModal from '../../ConfirmationModal';
 import CurrencyInput from '../../../helpers/CurrencyInput';
 
-function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
+function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockPrice }) {
     const { currentUser } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -78,13 +78,15 @@ function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
         const stockPurchaseData = {
             StockSymbol: stockSymbol,
             Amount: isCurrency ? parseFloat(amount) / stockPrice : parseFloat(amount),
-            StudentId: currentUser.userId
+            StudentId: currentUser.userId,
+            ClassId: classId
         };
 
         try {
             const response = await api.post(`/market/buy/${classId}`, stockPurchaseData);
             if (response.status === 200) {
-                // Handle successful purchase here
+                console.log(response.data);
+                updateClasses(response.data);
             } else {
                 // Handle other statuses here
             }
@@ -104,7 +106,7 @@ function BuyViewModal({ classesData, classId, stockSymbol, stockPrice }) {
 
     return (
         <div>
-            <button onClick={openModal} className="truncate bg-purple-500 hover:bg-purple-700 text-md font-bold py-1 px-4 rounded text-white flex items-center space-x-2">
+            <button onClick={openModal} className="truncate bg-purple-500 hover:bg-purple-700 text-md font-bold py-1 px-4 rounded text-white flex items-center space-x-2 w-full h-full" >
                 Buy {stockSymbol} at ${stockPrice?.toFixed(2) ?? 0}
             </button>
 

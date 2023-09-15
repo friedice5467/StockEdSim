@@ -99,11 +99,9 @@ namespace StockEdSim.Api.Services
                 {
                     authClaims.Add(new Claim(ClaimTypes.Role, userRole));
                 }
-
-                foreach (var userClass in user.UserClasses)
-                {
-                    authClaims.Add(new Claim("UserClass", userClass.ClassId.ToString()));
-                }
+                user.UserClasses = await _dbContext.UserClasses.Where(x => x.UserId == user.Id).ToListAsync();
+                string classIdsString = string.Join(",", user.UserClasses.Select(x => x.ClassId.ToString()));
+                authClaims.Add(new Claim("UserClasses", classIdsString));
 
                 var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
 

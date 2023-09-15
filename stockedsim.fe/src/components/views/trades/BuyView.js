@@ -20,7 +20,7 @@ Highcharts.setOptions({
     }
 });
 
-function BuyView({ classesData, classId }) {
+function BuyView({ classesData, updateClasses, classId }) {
     const [stocks, setStocks] = useState([]);
     const [stockSymbol, setStockSymbol] = useState("");
     const [stockName, setStockName] = useState("");
@@ -190,31 +190,31 @@ function BuyView({ classesData, classId }) {
     const allTimeLow = chartData.reduce((min, data) => (data.c < min ? data.c : min), Infinity);
 
     return (
-        <div className="flex h-full">
+        <div className="flex h-full w-full">
 
             {/* HighchartsReact Area */}
-            <div className="flex-1 pt-2 px-4 h-full">
+            <div className="flex-1 pt-2 px-4 h-full" style={{width: "80%"} }>
                 {/* Top Bar with Pills and BuyViewModal */}
                 <div className="flex justify-between items-center w-full px-4 mb-2" style={{ height: "7%" }}>
                     {
                         stockSymbol && latestStockPrice &&
                         <>
-                            <div className="flex space-x-4">
-                                <div className="bg-green-500 text-white px-4 py-1 rounded-lg text-md flex items-center space-x-2">
+                            <div className="flex space-x-4" style={{ maxWidth: "50%", maxHeight: "100%" }}>
+                                <div className="bg-green-500 text-white px-4 py-1 rounded text-md flex items-center space-x-2 truncate">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                                         <path d="M8 1L3 6h10L8 1z"></path>
                                     </svg>
                                     <span>1 YR ATH: ${allTimeHigh?.toFixed(2) ?? ''}</span>
                                 </div>
-                                <div className="bg-red-500 text-white px-4 py-1 rounded-lg text-md flex items-center space-x-2">
+                                <div className="bg-red-500 text-white px-4 py-1 rounded text-md flex items-center space-x-2 truncate">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                                         <path d="M8 15L3 10h10l-5 5z"></path>
                                     </svg>
                                     <span>1YR ATL: ${allTimeLow?.toFixed(2) ?? ''}</span>
                                 </div>
                             </div>
-                            <div className="ml-auto">
-                                <BuyViewModal stockSymbol={stockSymbol} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
+                            <div style={{ maxWidth: "50%", maxHeight: "100%" }}>
+                                <BuyViewModal stockSymbol={stockSymbol} updateClasses={updateClasses} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
                             </div>
                         </>
                     }
@@ -229,7 +229,7 @@ function BuyView({ classesData, classId }) {
             </div>
 
             {/* Side Area */}
-            <aside className="w-72 p-4 bg-gray-800 text-white h-full">
+            <aside className="p-4 bg-gray-800 text-white h-full" style={{width: "20%"} }>
                 <input
                     type="text"
                     placeholder="Search..."
@@ -239,8 +239,9 @@ function BuyView({ classesData, classId }) {
                         setSearchStockStr(e.target.value);
                         debouncedSearchStocks(e.target.value);
                     }}
+                    style={{height:"5%"} }
                 />
-                <div style={{ height: "93%" }}>
+                <div style={{ height: "92%", width: "auto" }}>
                     <AutoSizer>
                         {({ height, width }) => (
                             <List

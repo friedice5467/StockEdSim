@@ -7,5 +7,6 @@
         public Guid TeacherId { get; set; }
         public decimal DefaultBalance { get; set; } = 20000.00M;
         public IEnumerable<ClassBalanceDTO> ClassBalances { get; set; }
+        public IEnumerable<StockDTO> Stocks { get; set; }
     }
 }

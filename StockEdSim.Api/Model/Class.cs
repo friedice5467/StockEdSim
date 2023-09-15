@@ -9,5 +9,7 @@
         public virtual ApplicationUser Teacher { get; set; }
         public virtual ICollection<UserClass> UserClasses { get; set; } = new List<UserClass>();
         public virtual ICollection<ClassBalance> ClassBalances { get; set; } = new List<ClassBalance>();
+        public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+        public virtual ICollection<Stock> Stocks { get; set; } = new List<Stock>();
     }
 }
