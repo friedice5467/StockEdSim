@@ -35,4 +35,4 @@ Contributions are always appreciated! If you have suggestions, enhancements, or 
 
 ## License
 
-[APACHE]([https://choosealicense.com/licenses/mit/](https://github.com/friedice5467/StockEdSim/blob/master/LICENSE)https://github.com/friedice5467/StockEdSim/blob/master/LICENSE)
+[APACHE]([https://choosealicense.com/licenses/mit/](https://github.com/friedice5467/StockEdSim/blob/master/LICENSE)https://github.com/friedice5467/StockEdSim/blob/master/LICENSE.txt)
