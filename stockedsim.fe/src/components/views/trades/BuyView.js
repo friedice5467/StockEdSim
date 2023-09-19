@@ -201,7 +201,7 @@ function BuyView({ classesData, updateClasses, classId }) {
                         <>
                             <div className="flex space-x-4" style={{ maxWidth: "50%", maxHeight: "100%" }}>
                                 <div className="bg-green-500 text-white px-4 py-1 rounded text-md flex items-center space-x-2 truncate">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">hm y
                                         <path d="M8 1L3 6h10L8 1z"></path>
                                     </svg>
                                     <span>1 YR ATH: ${allTimeHigh?.toFixed(2) ?? ''}</span>

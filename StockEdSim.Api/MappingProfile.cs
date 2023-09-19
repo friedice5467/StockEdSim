@@ -9,7 +9,9 @@ namespace StockEdSim.Api
         public MappingProfile()
         {
             CreateMap<Class, ClassDTO>()
-                .ForMember(dest => dest.ClassBalances, opt => opt.MapFrom(src => src.ClassBalances));
+                .ForMember(dest => dest.ClassBalances, opt => opt.MapFrom(src => src.ClassBalances))
+                .ForMember(dest => dest.Stocks, opt => opt.MapFrom(src => src.Stocks))
+                .ForMember(dest => dest.Transactions, opt => opt.MapFrom(src => src.Transactions));
 
             CreateMap<ClassBalance, ClassBalanceDTO>();
 

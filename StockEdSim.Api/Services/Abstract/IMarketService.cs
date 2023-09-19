@@ -8,8 +8,9 @@ namespace StockEdSim.Api.Services.Abstract
         
         Task<ServiceResult<string>> GetAllStockSymbolsAsync();
         Task<ServiceResult<List<ClassDTO>>> GetClassesData(Guid userId);
-        Task<ServiceResult<DashboardData>> GetDashboardData(Guid userId);
+        Task<ServiceResult<List<ClassDTO>>> GetDashboardData(Guid userId);
         Task<ServiceResult<string>> GetStockCandlesAsync(string symbol);
+        Task<ServiceResult<string>> GetBulkStockQuotesAsync(string symbols);
         Task<ServiceResult<decimal?>> GetStockQuoteAsync(string symbol);
         Task<ApplicationUser?> GetStudent(Guid studentId);
         Task<ServiceResult<List<ClassDTO>>> BuyStock(StockDTO stockPurchase, Guid classId);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../helpers/AuthContext';
 import api from '../helpers/api';
 import ApiExceptionModal from './ApiExceptionModal';  
@@ -8,6 +8,7 @@ import { TECollapse } from "tw-elements-react";
 
 import ClassesView from './views/classes/ClassesView';
 import BuyView from './views/trades/BuyView';
+import PortfolioView from './views/portfolio/PortfolioView';
 
 /*import SellView from './views/trades/SellView';*/
 
@@ -25,9 +26,10 @@ function DashboardPage() {
 
     const [showJoinClassModal, setshowJoinClassModal] = useState(false);
 
-    const handleUpdateClasses = (newClasses) => {
+    const handleUpdateClasses = useCallback((newClasses) => {
         setClasses(newClasses);
-    };
+    }, []);
+
 
     useEffect(() => {
         if (currentUser) {
@@ -90,6 +92,8 @@ function DashboardPage() {
                 return <ClassesView />;
             case 'buyView':
                 return <BuyView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} />; 
+            case 'portfolioView':
+                return <PortfolioView updateClasses={handleUpdateClasses} />
             //case 'sellView':
             //    return <SellView classesData={classes} classId={classId} />;
             // Add more cases as you expand the functionality
@@ -156,10 +160,9 @@ function DashboardPage() {
                                 ))}
                             </TECollapse>
                         </li>
-                        <li><a href="#portfolio" className="block p-2 bg-blue-600 rounded hover:bg-blue-700">My Portfolio</a></li>
-                        <li><a href="#transactions" className="block p-2 bg-blue-600 rounded hover:bg-blue-700">Transactions</a></li>
-                        <li><a href="#leaderboard" className="block p-2 bg-blue-600 rounded hover:bg-blue-700">Leaderboard</a></li>
-                        <li><a href="#settings" className="block p-2 bg-blue-600 rounded hover:bg-blue-700">Settings</a></li>
+                            <li><a href="#portfolio" onClick={(e) => handleNavigationClick(e, 'portfolioView')} className="block p-2 bg-blue-600 rounded hover:bg-blue-700">My Portfolio</a></li>
+                            <li><a href="#leaderboard" onClick={(e) => handleNavigationClick(e, 'leaderboardView')}  className="block p-2 bg-blue-600 rounded hover:bg-blue-700">Leaderboards</a></li>
+                            <li><a href="#settings" onClick={(e) => handleNavigationClick(e, 'settingsView')} className="block p-2 bg-blue-600 rounded hover:bg-blue-700">Settings</a></li>
                     </ul>
                 </nav>
                 </aside>

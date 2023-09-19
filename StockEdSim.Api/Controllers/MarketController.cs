@@ -2,9 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using StockEdSim.Api.Model.Dto;
 using StockEdSim.Api.Services.Abstract;
-using System;
-using System.Threading.Tasks;
-using StockEdSim.Api.Model;
 using System.Security.Claims;
 
 namespace StockEdSim.Api.Controllers
@@ -34,6 +31,16 @@ namespace StockEdSim.Api.Controllers
         public async Task<IActionResult> GetStockCandles([FromRoute] string symbol)
         {
             var result = await _marketService.GetStockCandlesAsync(symbol);
+            if (result.IsSuccess)
+                return Ok(result.Data);
+
+            return StatusCode((int)result.StatusCode, result.Message);
+        }
+
+        [HttpGet("bulkQuote/{symbols}")]
+        public async Task<IActionResult> GetBulkQuotes([FromRoute] string symbols)
+        {
+            var result = await _marketService.GetBulkStockQuotesAsync(symbols);
             if (result.IsSuccess)
                 return Ok(result.Data);
 

@@ -12,6 +12,7 @@ namespace StockEdSim.Api.Services
     public class MarketService : IMarketService
     {
         private readonly string _finnhubKey = string.Empty;
+        private readonly string _fmpKey = string.Empty;
         private static readonly HttpClient client = new();
         private readonly AppDbContext _dbcontext;
         private readonly IMapper _mapper;
@@ -19,6 +20,7 @@ namespace StockEdSim.Api.Services
         public MarketService(IConfiguration configuration, AppDbContext dbContext, IMapper mapper)
         {
             _finnhubKey = configuration["Finnhub:Key"];
+            _fmpKey = configuration["Fmp:Key"];
             _dbcontext = dbContext;
             _mapper = mapper;
         }
@@ -50,6 +52,19 @@ namespace StockEdSim.Api.Services
             }
 
             return ServiceResult<string>.Failure($"Failed to fetch candle data. Error: {response.StatusCode}");
+        }
+
+        public async Task<ServiceResult<string>> GetBulkStockQuotesAsync(string symbols)
+        {
+            var url = $"https://financialmodelingprep.com/api/v3/quote/{symbols}?apikey={_fmpKey}";
+            HttpResponseMessage response = await client.GetAsync(url);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                return ServiceResult<string>.Success(data: await response.Content.ReadAsStringAsync());
+            }
+
+            return ServiceResult<string>.Failure($"Failed to fetch stock data. Error: {response.StatusCode}");
         }
 
         public async Task<ServiceResult<decimal?>> GetStockQuoteAsync(string symbol)
@@ -100,25 +115,17 @@ namespace StockEdSim.Api.Services
 
             balance.Balance -= currentStockPrice.Data.Value * stockPurchase.Amount;
 
-            var existingStock = await _dbcontext.Stocks.FirstOrDefaultAsync(stock => stock.StudentId ==stockPurchase.StudentId && 
-                                                        stock.StockSymbol == stockPurchase.StockSymbol && stock.ClassId == stockPurchase.ClassId);
-            if (existingStock != null)
+            var newStock = new Stock()
             {
-                existingStock.Amount += stockPurchase.Amount;
-                _dbcontext.Stocks.Update(existingStock);
-            }
-            else
-            {
-                var newStock = new Stock()
-                {
-                    Id = Guid.NewGuid(),
-                    Amount = stockPurchase.Amount,
-                    StockSymbol = stockPurchase.StockSymbol,
-                    StudentId = stockPurchase.StudentId,
-                    ClassId = stockPurchase.ClassId
-                };
-                _dbcontext.Stocks.Add(newStock);
-            }
+                Id = Guid.NewGuid(),
+                Amount = stockPurchase.Amount,
+                StockSymbol = stockPurchase.StockSymbol,
+                StudentId = stockPurchase.StudentId,
+                ClassId = stockPurchase.ClassId,
+                PurchasePrice = currentStockPrice.Data.Value, 
+                PurchaseDate = DateTime.UtcNow 
+            };
+            _dbcontext.Stocks.Add(newStock);
 
             await _dbcontext.SaveChangesAsync();
 
@@ -130,7 +137,9 @@ namespace StockEdSim.Api.Services
                 Amount = stockPurchase.Amount,
                 PriceAtTransaction = currentStockPrice.Data ?? 0,
                 TransactionDate = DateTime.UtcNow,
-                ClassId = stockPurchase.ClassId
+                ClassId = stockPurchase.ClassId,
+                Type = TransactionType.Buy,
+                CurrentBalanceAfterTransaction = balance.Balance
             };
 
             if (!await LogTransaction(transaction))
@@ -155,8 +164,12 @@ namespace StockEdSim.Api.Services
                 return ServiceResult<List<ClassDTO>>.Failure("Student does not have a balance for this class", statusCode: HttpStatusCode.BadRequest);
             }
 
-            var existingStock = await _dbcontext.Stocks.FirstOrDefaultAsync(stock => stock.StudentId == stockSale.StudentId && stock.StockSymbol == stockSale.StockSymbol);
-            if (existingStock == null || existingStock.Amount < stockSale.Amount)
+            var stocksToSell = await _dbcontext.Stocks
+                .Where(stock => stock.StudentId == stockSale.StudentId && stock.StockSymbol == stockSale.StockSymbol)
+                .OrderBy(stock => stock.PurchaseDate)
+                .ToListAsync();
+
+            if (stocksToSell.Sum(s => s.Amount) < stockSale.Amount)
             {
                 return ServiceResult<List<ClassDTO>>.Failure("Not enough stock to sell.", statusCode: HttpStatusCode.BadRequest);
             }
@@ -169,14 +182,27 @@ namespace StockEdSim.Api.Services
 
             balance.Balance += currentStockPrice.Data.Value * stockSale.Amount;
 
-            existingStock.Amount -= stockSale.Amount;
-            if (existingStock.Amount == 0)
+            decimal netProfit = 0;
+            decimal amountToSell = stockSale.Amount;
+            foreach (var stock in stocksToSell)
             {
-                _dbcontext.Stocks.Remove(existingStock);
-            }
-            else
-            {
-                _dbcontext.Stocks.Update(existingStock);
+                if (amountToSell <= 0) break;
+
+                var sellingFromThisStock = Math.Min(stock.Amount, amountToSell);
+
+                netProfit += (currentStockPrice.Data.Value - stock.PurchasePrice) * sellingFromThisStock;
+
+                stock.Amount -= sellingFromThisStock;
+                if (stock.Amount == 0)
+                {
+                    _dbcontext.Stocks.Remove(stock);
+                }
+                else
+                {
+                    _dbcontext.Stocks.Update(stock);
+                }
+
+                amountToSell -= sellingFromThisStock;
             }
 
             await _dbcontext.SaveChangesAsync();
@@ -186,10 +212,13 @@ namespace StockEdSim.Api.Services
                 Id = Guid.NewGuid(),
                 StudentId = stockSale.StudentId,
                 StockSymbol = stockSale.StockSymbol,
-                Amount = -stockSale.Amount,  
+                Amount = stockSale.Amount,
                 PriceAtTransaction = currentStockPrice.Data ?? 0,
                 TransactionDate = DateTime.UtcNow,
-                ClassId = stockSale.ClassId
+                ClassId = stockSale.ClassId,
+                Type = TransactionType.Sell,
+                CurrentBalanceAfterTransaction = balance.Balance,
+                NetProfit = netProfit
             };
 
             if (!await LogTransaction(transaction))
@@ -259,27 +288,22 @@ namespace StockEdSim.Api.Services
             return ServiceResult<Dictionary<Guid, List<StudentData>>>.Success(data: result);
         }
 
-        public async Task<ServiceResult<DashboardData>> GetDashboardData(Guid userId)
+        public async Task<ServiceResult<List<ClassDTO>>> GetDashboardData(Guid userId)
         {
             var user = await _dbcontext.Users
                 .Include(u => u.Stocks)
                 .Include(u => u.Transactions)
-                .Include(u => u.UserClasses).ThenInclude(uc => uc.Class)
+                .Include(u => u.UserClasses).ThenInclude(uc => uc.Class).ThenInclude(c => c.ClassBalances)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
             {
-                return ServiceResult<DashboardData>.Failure("User not found.", statusCode: HttpStatusCode.NotFound);
+                return ServiceResult<List<ClassDTO>>.Failure("User not found.", statusCode: HttpStatusCode.NotFound);
             }
 
-            var data = new DashboardData
-            {
-                Stocks = _mapper.Map<List<StockDTO>>(user.Stocks),
-                Transactions = _mapper.Map<List<TransactionDTO>>(user.Transactions),
-                Classes = _mapper.Map<List<ClassDTO>>(user.UserClasses.Select(x => x.Class))
-            };
+            var data = _mapper.Map<List<ClassDTO>>(user.UserClasses.Select(x => x.Class));
 
-            return ServiceResult<DashboardData>.Success(data: data);
+            return ServiceResult<List<ClassDTO>>.Success(data: data);
         }
 
         public async Task<ServiceResult<List<ClassDTO>>> GetClassesData(Guid userId)
