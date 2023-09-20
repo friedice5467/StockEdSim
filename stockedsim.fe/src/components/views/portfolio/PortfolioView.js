@@ -80,31 +80,50 @@ function PortfolioView({ updateClasses }) {
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
-            const response = await api.get("/market/myprofile/dashboard");
-            const classesData = response.data;
-            setClasses(classesData);
-            updateClasses(classesData);
-            setIsLoading(false);
-            if (classesData && classesData.length === 1) {
-                const defaultClass = classesData[0];
-                setSelectedClass(defaultClass);
-                fetchStockQuotes(defaultClass);
+
+            try {
+                const response = await api.get("/market/myprofile/dashboard");
+                const classesData = response.data;
+                setClasses(classesData);
+                updateClasses(classesData);
+
+                if (classesData && classesData.length === 1) {
+                    const defaultClass = classesData[0];
+                    setSelectedClass(defaultClass);
+                    fetchStockQuotes(defaultClass);
+                }
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+                setApiException(error);
+            } finally {
+                setIsLoading(false);
             }
         };
+
         fetchData();
     }, [updateClasses]);
 
     const fetchStockQuotes = async (selectedClass) => {
         const symbols = selectedClass.stocks.map(s => s.stockSymbol).join(',');
-        setIsLoading(true);
-        const response = await api.get(`/market/bulkQuote/${symbols}`);
-        const quotesDict = {};
-        response.data.forEach(quote => {
-            quotesDict[quote.symbol] = quote;
-        });
-        setStockQuotes(quotesDict);
-        setIsLoading(false);
+
+        try {
+            setIsLoading(true);
+            const response = await api.get(`/market/bulkQuote/${symbols}`);
+            const quotesDict = {};
+
+            response.data.forEach(quote => {
+                quotesDict[quote.symbol] = quote;
+            });
+
+            setStockQuotes(quotesDict);
+        } catch (error) {
+            console.error("Error fetching stock quotes:", error);
+            setApiException(error);
+        } finally {
+            setIsLoading(false);
+        }
     }
+
 
     const handleClassChange = (event) => {
         const classId = event.target.value;
@@ -127,6 +146,7 @@ function PortfolioView({ updateClasses }) {
 
                 {classes && (
                     <div className="my-2">
+                        <p className="text-center text-xl font-bold mt-4">{selectedClass.className} - Available Balance: ${selectedClass.classBalances[0].balance}</p>
                         <label htmlFor="classDropdown" className="mr-2 font-bold">Select Class:</label>
                         <select id="classDropdown" value={selectedClass ? selectedClass.id : ''} onChange={handleClassChange} className="p-2 rounded bg-white text-black w-full">
                             <option value="">Select a Class</option>
@@ -145,7 +165,7 @@ function PortfolioView({ updateClasses }) {
                             highcharts={Highcharts}
                             options={{
                                 title: {
-                                    text: `${selectedClass.className} - Available Balance: $${selectedClass.classBalances[0].balance}`
+                                    text: `Current Portfolio Value: $${totalStockValue.toFixed(2)}`
                                 },
                                 series: [{
                                     type: 'pie',
@@ -168,7 +188,6 @@ function PortfolioView({ updateClasses }) {
                                 }
                             }}
                         />
-                        <p className="text-center text-xl font-bold mt-4">Total Portfolio Value: ${totalStockValue.toFixed(2)}</p>
                     </div>
                 )}
 

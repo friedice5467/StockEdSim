@@ -8,9 +8,8 @@ import { TECollapse } from "tw-elements-react";
 
 import ClassesView from './views/classes/ClassesView';
 import BuyView from './views/trades/BuyView';
+import SellView from './views/trades/SellView';
 import PortfolioView from './views/portfolio/PortfolioView';
-
-/*import SellView from './views/trades/SellView';*/
 
 function DashboardPage() {
     const { currentUser } = useAuth();
@@ -21,7 +20,7 @@ function DashboardPage() {
     const [apiException, setApiException] = useState(null);
     const [classes, setClasses] = useState([]);
     const [activeClass, setActiveClass] = useState("");
-    const [activeSubClass, setActiveSubClass] = useState("");
+    const [tradeMode, setTradeMode] = useState('buy');
     const [classId, setClassId] = useState("");
 
     const [showJoinClassModal, setshowJoinClassModal] = useState(false);
@@ -32,36 +31,39 @@ function DashboardPage() {
 
 
     useEffect(() => {
-        if (currentUser) {
-            setIsLoading(true);
+        const fetchClasses = async () => {
+            if (currentUser) {
+                setIsLoading(true);
 
-            api.get("/market/myprofile/GetClasses")
-                .then(response => {
+                try {
+                    const response = await api.get("/market/myprofile/GetClasses");
                     setClasses(response.data);
-                    setIsLoading(false);
-                })
-                .catch(error => {
+                } catch (error) {
                     console.error("Error fetching classes:", error);
                     setApiException(error);
+                } finally {
                     setIsLoading(false);
-                });
-        }
+                }
+            }
+        };
+
+        fetchClasses();
     }, [currentUser]);
 
-    const handleJoinClass = (passedClassId) => {
+    const handleJoinClass = async (passedClassId) => {
         setIsLoading(true);
-        api.post(`/market/joinClass/${passedClassId}`)
-            .then(response => {
-                console.log(response.data);
-                setClasses(response.data);
-                setshowJoinClassModal(false);
-                setIsLoading(false);
-            })
-            .catch(error => {
-                console.error("Error fetching classes:", error);
-                setApiException(error);
-                setIsLoading(false);
-            });
+
+        try {
+            const response = await api.post(`/market/joinClass/${passedClassId}`);
+            console.log(response.data);
+            setClasses(response.data);
+            setshowJoinClassModal(false);
+        } catch (error) {
+            console.error("Error joining class:", error);
+            setApiException(error);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     const toggleAccordion = (classId) => {
@@ -72,21 +74,43 @@ function DashboardPage() {
         }
     };
 
-    const toggleSubAccordion = (classId) => {
-        if (activeSubClass === classId) {
-            setActiveSubClass("");
-        } else {
-            setActiveSubClass(classId);
-        }
-    };
-
     const handleNavigationClick = (e, view, classId) => {
         e.preventDefault();
         setClassId(classId);
         setView(view);
+        setTradeMode('buy');
     };
 
     const renderMainContent = () => {
+        if (view === 'buyView') {  
+            return (
+                <>
+                    <div className="w-full text-gray-700 flex items-center justify-center max-h-1/20">
+                        <div className="relative inline-block w-48 text-gray-700" style={{userSelect:'none'}}>
+                            <div className="flex items-center justify-between w-full bg-blue-200 py-2 rounded-full">
+                                <div
+                                    className={`absolute top-0 bottom-0 rounded-full w-1/2 bg-blue-500 transition-transform duration-300 ease-in-out transform ${tradeMode === 'sell' ? 'translate-x-full' : ''}`}
+                                ></div>
+                                <button
+                                    className="w-1/2 text-white z-10"
+                                    onClick={() => setTradeMode('buy')}>
+                                    Buy
+                                </button>
+                                <button
+                                    className="w-1/2 text-white z-10"
+                                    onClick={() => setTradeMode('sell')}>
+                                    Sell
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="h-19/20">
+                    {tradeMode === 'buy' ? <BuyView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} /> :
+                            <SellView classesData={classes} classId={classId} />}
+                    </div>
+                </>
+            );
+        }
         switch (view) {
             case 'classes':
                 return <ClassesView />;
@@ -111,15 +135,15 @@ function DashboardPage() {
         <div className="flex flex-col h-full w-full bg-gray-100">
             <header className="w-full bg-blue-600 xs:p-0 sm:p-1 md:p-1 lg:p-3 xl:p-3 text-white max-h-3/40">
                 <div className="flex justify-between items-center">
-                    <div className="font-semibold xs:text-xs sm:text-lg md:text-xl lg:text-2xl xl:text-2xl">StockEdSim</div>
-                    <div className="flex">
+                    <a className="font-semibold xs:text-xs sm:text-lg md:text-xl lg:text-2xl xl:text-2xl" href="/#" style={{ userSelect: 'none' }}>StockEdSim</a>
+                    <div className="flex" style={{ userSelect: 'none' }}>
                         <button className="truncate bg-green-500 hover:bg-green-700 xs:text-xs sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold xs:py-0 sm:py-0 lg:py-1 px-2 sm:px-3 md:px-4 rounded mr-3" onClick={() => setshowJoinClassModal(true)}>Join Class</button>
                         <button className="truncate bg-red-500 hover:bg-red-700  xs:text-xs sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold xs:py-0 sm:py-0 lg:py-1 px-2 sm:px-3 md:px-4 rounded" onClick={logout}>Logout</button>
                     </div>
                 </div>
             </header>
             <div className="flex flex-1 h-37/40">
-                <aside className="bg-gray-800 p-4 pt-16 h-full w-auto sm:w-36 md:w-36 lg:w-36 overflow-y-auto">
+                <aside className="bg-gray-800 p-4 pt-16 h-full w-auto sm:w-36 md:w-36 lg:w-36 overflow-y-auto" style={{userSelect: 'none'}}>
                 <nav>
                     <ul className="space-y-2 text-white">
                         {(userRole === "Teacher" || userRole === "Admin") && (
@@ -141,21 +165,8 @@ function DashboardPage() {
                             <TECollapse show={activeClass === 'myclasses'}>
                                 {classes.map((classItem) => (
                                     <div key={classItem.id} className="ml-3">
-                                        <a href={`#class-${classItem.id}`} onClick={(e) => toggleSubAccordion(classItem.id)}
+                                        <a href={`#class-${classItem.id}`} onClick={(e) => handleNavigationClick(e, 'buyView', classItem.id)}
                                             className="block p-2 bg-blue-500 rounded hover:bg-blue-600 truncate w-full">{classItem.className}</a>
-
-                                        <TECollapse show={activeSubClass === classItem.id}>
-                                            <ul className="ml-3">
-                                                <li>
-                                                    <a href="#buy" onClick={(e) => handleNavigationClick(e, 'buyView', classItem.id)}
-                                                        className="block p-2 pl-6 bg-blue-400 rounded hover:bg-blue-500 mb-1">Buy</a>
-                                                </li>
-                                                <li>
-                                                    <a href="#sell" onClick={(e) => handleNavigationClick(e, 'sellView', classItem.id)}
-                                                        className="block p-2 pl-6 bg-blue-400 rounded hover:bg-blue-500">Sell</a>
-                                                </li>
-                                            </ul>
-                                        </TECollapse>
                                     </div>
                                 ))}
                             </TECollapse>

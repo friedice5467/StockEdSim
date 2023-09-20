@@ -20,7 +20,7 @@ Highcharts.setOptions({
     }
 });
 
-function BuyView({ classesData, updateClasses, classId }) {
+function SellView({ classesData, updateClasses, classId }) {
     const [stocks, setStocks] = useState([]);
     const [stockSymbol, setStockSymbol] = useState("");
     const [stockName, setStockName] = useState("");
@@ -193,7 +193,7 @@ function BuyView({ classesData, updateClasses, classId }) {
         <div className="flex h-full w-full">
 
             {/* HighchartsReact Area */}
-            <div className="flex-1 pt-2 px-4 h-full" style={{width: "80%"} }>
+            <div className="flex-1 pt-2 px-4 h-full" style={{ width: "80%" }}>
                 {/* Top Bar with Pills and BuyViewModal */}
                 <div className="flex justify-between items-center w-full px-4 mb-2" style={{ height: "7%" }}>
                     {
@@ -229,7 +229,7 @@ function BuyView({ classesData, updateClasses, classId }) {
             </div>
 
             {/* Side Area */}
-            <aside className="p-4 bg-gray-800 text-white h-full rounded-md" style={{width: "20%", userSelect:'none'} }>
+            <aside className="p-4 bg-gray-800 text-white h-full" style={{ width: "20%" }}>
                 <input
                     type="text"
                     placeholder="Search..."
@@ -239,7 +239,7 @@ function BuyView({ classesData, updateClasses, classId }) {
                         setSearchStockStr(e.target.value);
                         debouncedSearchStocks(e.target.value);
                     }}
-                    style={{height:"5%"} }
+                    style={{ height: "5%" }}
                 />
                 <div style={{ height: "92%", width: "auto" }}>
                     <AutoSizer>
@@ -264,4 +264,4 @@ function BuyView({ classesData, updateClasses, classId }) {
     );
 }
 
-export default BuyView;
+export default SellView;
