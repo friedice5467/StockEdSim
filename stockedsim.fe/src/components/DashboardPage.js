@@ -127,7 +127,7 @@ function DashboardPage() {
             case 'buyView':
                 return <BuyView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} />; 
             case 'portfolioView':
-                return <PortfolioView updateClasses={handleUpdateClasses} />
+                return <PortfolioView updateClasses={handleUpdateClasses} classesData={classes} />
             //case 'sellView':
             //    return <SellView classesData={classes} classId={classId} />;
             // Add more cases as you expand the functionality
