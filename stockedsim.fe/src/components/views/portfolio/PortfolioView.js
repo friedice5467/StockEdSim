@@ -146,7 +146,7 @@ function PortfolioView({ updateClasses }) {
 
                 {classes && (
                     <div className="my-2">
-                        <p className="text-center text-xl font-bold mt-4">{selectedClass.className} - Available Balance: ${selectedClass.classBalances[0].balance}</p>
+                        <p className="text-center text-xl font-bold mt-4">{selectedClass.className} - Available Spending Balance: ${selectedClass.classBalances[0].balance}</p>
                         <label htmlFor="classDropdown" className="mr-2 font-bold">Select Class:</label>
                         <select id="classDropdown" value={selectedClass ? selectedClass.id : ''} onChange={handleClassChange} className="p-2 rounded bg-white text-black w-full">
                             <option value="">Select a Class</option>
@@ -184,6 +184,7 @@ function PortfolioView({ updateClasses }) {
                                 }],
                                 tooltip: {
                                     headerFormat: '',
+                                    // eslint-disable-next-line no-template-curly-in-string
                                     pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.percentage:.1f}%</b> of total<br/>Shares: <b>{point.z:.2f}</b><br/>Value: <b>${point.y:.2f}</b><br/>'
                                 }
                             }}

@@ -30,10 +30,35 @@ function BuyView({ classesData, updateClasses, classId }) {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
     const [isFirstRun, setIsFirstRun] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const targetClass = classesData.find(classItem => classItem.id === classId);
+    const stockTransactions = targetClass && targetClass.transactions ? targetClass.transactions.filter(transaction => transaction.stockSymbol === stockSymbol) : [];
+    const flagsData = stockTransactions.map(transaction => {
+        return {
+            x: new Date(transaction.transactionDate).getTime(),
+            y: transaction.priceAtTransaction,
+            title: transaction.type === 0 ? "B" : "S",
+            color: transaction.type === 0 ? "red" : "green",
+            text: `${transaction.type === 0 ? "Bought" : "Sold"} Price: ${transaction.priceAtTransaction.toFixed(2)} Amount: ${transaction.amount.toFixed(2)}`
+        };
+    });
+    console.log(chartData);
+    const allTimeHigh = chartData.reduce((max, data) => (data.h > max ? data.h : max), -Infinity);
+    const allTimeLow = chartData.reduce((min, data) => (data.l < min ? data.l : min), Infinity);
 
     const options = {
         title: {
-            text: `${stockSymbol}: ${stockName}`
+            text: `${stockSymbol}${stockSymbol ? ":" : ""} ${stockName}`
         },
         scrollbar: {
             enabled: false
@@ -53,6 +78,13 @@ function BuyView({ classesData, updateClasses, classId }) {
                 data: chartData.map(item => [item.date.getTime(), item.v]),
                 yAxis: 1,
             },
+            {
+                type: 'flags',
+                data: flagsData,
+                onSeries: 'dataseries',
+                shape: 'flag',
+                width: 8
+            }
         ],
         yAxis: [{
             labels: {
@@ -61,7 +93,34 @@ function BuyView({ classesData, updateClasses, classId }) {
             height: '80%',
             resize: {
                 enabled: true
-            }
+            },
+            plotLines: [{
+                color: 'green',
+                dashStyle: 'shortdash',
+                value: allTimeHigh,
+                width: 1,
+                label: {
+                    text: `All-Time High 1YR $${allTimeHigh.toFixed(2)}`,
+                    align: 'left',
+                    style: {
+                        color: 'green'
+                    }
+                },
+                zIndex: 5
+            }, {
+                color: 'red',
+                dashStyle: 'shortdash',
+                value: allTimeLow,
+                width: 1,
+                label: {
+                    text: `All-Time Low 1YR $${allTimeLow.toFixed(2)}`,
+                    align: 'left',
+                    style: {
+                        color: 'red'
+                    }
+                },
+                zIndex: 5
+            }]
         }, {
             labels: {
                 align: 'left'
@@ -116,6 +175,27 @@ function BuyView({ classesData, updateClasses, classId }) {
             },
             useHTML: true,
             attr: { 'class': 'customNoData' }
+        },
+        credits: {
+            enabled: false
+        },
+        chart: {
+            events: {
+                load: function () {
+                    const chart = this;
+
+                        chart.renderer.button(`Buy ${stockSymbol} at $${latestStockPrice}`, chart.chartWidth / 2 - 50, 10, function () {
+
+                            openModal();
+                        }, {
+                            fill: '#a4edba',
+                            r: 5,
+                            padding: 10,
+                            zIndex: 10
+                        }).add();
+                    
+                }
+            }
         }
     };
 
@@ -186,8 +266,6 @@ function BuyView({ classesData, updateClasses, classId }) {
     };
 
     const latestStockPrice = chartData.length > 0 ? chartData[chartData.length - 1].c : null;
-    const allTimeHigh = chartData.reduce((max, data) => (data.c > max ? data.c : max), -Infinity);
-    const allTimeLow = chartData.reduce((min, data) => (data.c < min ? data.c : min), Infinity);
 
     return (
         <div className="flex h-full w-full">
@@ -195,34 +273,12 @@ function BuyView({ classesData, updateClasses, classId }) {
             {/* HighchartsReact Area */}
             <div className="flex-1 pt-2 px-4 h-full" style={{width: "80%"} }>
                 {/* Top Bar with Pills and BuyViewModal */}
-                <div className="flex justify-between items-center w-full px-4 mb-2" style={{ height: "7%" }}>
-                    {
-                        stockSymbol && latestStockPrice &&
-                        <>
-                            <div className="flex space-x-4" style={{ maxWidth: "50%", maxHeight: "100%" }}>
-                                <div className="bg-green-500 text-white px-4 py-1 rounded text-md flex items-center space-x-2 truncate">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">hm y
-                                        <path d="M8 1L3 6h10L8 1z"></path>
-                                    </svg>
-                                    <span>1 YR ATH: ${allTimeHigh?.toFixed(2) ?? ''}</span>
-                                </div>
-                                <div className="bg-red-500 text-white px-4 py-1 rounded text-md flex items-center space-x-2 truncate">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                        <path d="M8 15L3 10h10l-5 5z"></path>
-                                    </svg>
-                                    <span>1YR ATL: ${allTimeLow?.toFixed(2) ?? ''}</span>
-                                </div>
-                            </div>
-                            <div style={{ maxWidth: "50%", maxHeight: "100%" }}>
-                                <BuyViewModal stockSymbol={stockSymbol} updateClasses={updateClasses} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
-                            </div>
-                        </>
-                    }
-                </div>
+                <BuyViewModal isModalOpen={isModalOpen} openModal={openModal} closeModal={closeModal} stockSymbol={stockSymbol} updateClasses={updateClasses}
+                    classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
 
                 <HighchartsReact
                     highcharts={Highcharts}
-                    containerProps={{ style: { height: "92%", width: "auto" } }}
+                    containerProps={{ style: { height: "100%", width: "auto" } }}
                     constructorType={'stockChart'}
                     options={options}
                 />

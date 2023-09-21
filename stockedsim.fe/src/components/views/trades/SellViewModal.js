@@ -6,13 +6,14 @@ import ApiExceptionModal from '../../ApiExceptionModal';
 import ConfirmationModal from '../../ConfirmationModal';
 import CurrencyInput from '../../../helpers/CurrencyInput';
 
-function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockPrice, isModalOpen, openModal, closeModal }) {
+function SellViewModal({ classesData, updateClasses, classId, stockSymbol, stockPrice }) {
     const { currentUser } = useAuth();
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [amount, setAmount] = useState('');
-    const [isCurrency, setIsCurrency] = useState(true);  
+    const [isCurrency, setIsCurrency] = useState(true);
 
     const classData = classesData.find(cls => cls.id === classId);
     const currentBalance = classData && classData.classBalances && classData.classBalances.length > 0
@@ -22,6 +23,14 @@ function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockP
     const expectedBalanceAfterPurchase = isCurrency
         ? (currentBalance - parseFloat(amount) || currentBalance).toFixed(2)
         : (currentBalance - (amount * stockPrice) || currentBalance).toFixed(2);
+
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
 
     const toggleConversion = (isConverter) => {
         if (isCurrency) {
@@ -97,6 +106,10 @@ function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockP
 
     return (
         <div>
+            <button onClick={openModal} className="truncate bg-purple-500 hover:bg-purple-700 text-md font-bold py-1 px-4 rounded text-white flex items-center space-x-2 w-full h-full" >
+                Buy {stockSymbol} at ${stockPrice?.toFixed(2) ?? 0}
+            </button>
+
             {isModalOpen && (
                 <div className="fixed z-10 inset-0 overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -166,4 +179,4 @@ function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockP
     );
 }
 
-export default BuyViewModal;
+export default SellViewModal;

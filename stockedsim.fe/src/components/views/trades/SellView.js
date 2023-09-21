@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../../helpers/api';
 import LoadingModal from '../../LoadingModal';
 import ApiExceptionModal from '../../ApiExceptionModal';
-import BuyViewModal from './BuyViewModal';
+import SellViewModal from './SellViewModal';
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
 import NoDataToDisplay from 'highcharts/modules/no-data-to-display';
@@ -31,6 +31,20 @@ function SellView({ classesData, updateClasses, classId }) {
     const [apiError, setApiError] = useState(null);
     const [isFirstRun, setIsFirstRun] = useState(true);
 
+    const targetClass = classesData.find(classItem => classItem.id === classId);
+    const stockTransactions = targetClass && targetClass.transactions ? targetClass.transactions.filter(transaction => transaction.stockSymbol === stockSymbol) : [];
+    const flagsData = stockTransactions.map(transaction => {
+        return {
+            x: new Date(transaction.transactionDate).getTime(),
+            y: transaction.priceAtTransaction,
+            title: transaction.type === 0 ? "B" : "S",
+            color: transaction.type === 0 ? "red" : "green",
+            text: `${transaction.type === 0 ? "Bought" : "Sold"} Price: ${transaction.priceAtTransaction.toFixed(2)} Amount: ${transaction.amount.toFixed(2)}`
+        };
+    });
+    const allTimeHigh = chartData.reduce((max, data) => (data.h > max ? data.h : max), -Infinity);
+    const allTimeLow = chartData.reduce((min, data) => (data.l < min ? data.l : min), Infinity);
+
     const options = {
         title: {
             text: `${stockSymbol}: ${stockName}`
@@ -53,6 +67,13 @@ function SellView({ classesData, updateClasses, classId }) {
                 data: chartData.map(item => [item.date.getTime(), item.v]),
                 yAxis: 1,
             },
+            {
+                type: 'flags',
+                data: flagsData,
+                onSeries: 'dataseries',
+                shape: 'flag',
+                width: 8
+            }
         ],
         yAxis: [{
             labels: {
@@ -61,7 +82,34 @@ function SellView({ classesData, updateClasses, classId }) {
             height: '80%',
             resize: {
                 enabled: true
-            }
+            },
+            plotLines: [{
+                color: 'green', 
+                dashStyle: 'shortdash',
+                value: allTimeHigh, 
+                width: 1, 
+                label: {
+                    text: `All-Time High 1YR $${allTimeHigh.toFixed(2)}`, 
+                    align: 'left', 
+                    style: {
+                        color: 'green'
+                    }
+                },
+                zIndex: 5
+            }, {
+                color: 'red', 
+                dashStyle: 'shortdash',
+                value: allTimeLow, 
+                width: 1, 
+                label: {
+                    text: `All-Time Low 1YR $${allTimeLow.toFixed(2)}`,
+                    align: 'left', 
+                    style: {
+                        color: 'red'
+                    }
+                },
+                zIndex: 5
+            }]
         }, {
             labels: {
                 align: 'left'
@@ -116,7 +164,10 @@ function SellView({ classesData, updateClasses, classId }) {
             },
             useHTML: true,
             attr: { 'class': 'customNoData' }
-        }
+        },
+        credits: {
+            enabled: false
+        },
     };
 
     useEffect(() => {
@@ -124,8 +175,16 @@ function SellView({ classesData, updateClasses, classId }) {
             try {
                 setIsLoading(true);
                 const response = await api.get("/market/symbols");
-                setStocks(response.data);
-                setFilteredStocks(response.data.sort((a, b) => a.symbol.localeCompare(b.symbol)));
+                const stocksData = response.data;
+                const availStocks = targetClass.stocks;
+                const stockSymbolsSet = new Set(availStocks.map(stock => stock.stockSymbol));
+
+                const filteredStocks = stocksData.filter(stock => stockSymbolsSet.has(stock.symbol));
+                console.log(filteredStocks);
+                filteredStocks.sort((a, b) => a.symbol.localeCompare(b.symbol));
+
+                setStocks(filteredStocks);
+                setFilteredStocks(filteredStocks);
             } catch (error) {
                 setApiError("Error fetching stock symbols.");
             } finally {
@@ -186,8 +245,6 @@ function SellView({ classesData, updateClasses, classId }) {
     };
 
     const latestStockPrice = chartData.length > 0 ? chartData[chartData.length - 1].c : null;
-    const allTimeHigh = chartData.reduce((max, data) => (data.c > max ? data.c : max), -Infinity);
-    const allTimeLow = chartData.reduce((min, data) => (data.c < min ? data.c : min), Infinity);
 
     return (
         <div className="flex h-full w-full">
@@ -199,22 +256,8 @@ function SellView({ classesData, updateClasses, classId }) {
                     {
                         stockSymbol && latestStockPrice &&
                         <>
-                            <div className="flex space-x-4" style={{ maxWidth: "50%", maxHeight: "100%" }}>
-                                <div className="bg-green-500 text-white px-4 py-1 rounded text-md flex items-center space-x-2 truncate">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">hm y
-                                        <path d="M8 1L3 6h10L8 1z"></path>
-                                    </svg>
-                                    <span>1 YR ATH: ${allTimeHigh?.toFixed(2) ?? ''}</span>
-                                </div>
-                                <div className="bg-red-500 text-white px-4 py-1 rounded text-md flex items-center space-x-2 truncate">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                        <path d="M8 15L3 10h10l-5 5z"></path>
-                                    </svg>
-                                    <span>1YR ATL: ${allTimeLow?.toFixed(2) ?? ''}</span>
-                                </div>
-                            </div>
                             <div style={{ maxWidth: "50%", maxHeight: "100%" }}>
-                                <BuyViewModal stockSymbol={stockSymbol} updateClasses={updateClasses} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
+                                <SellViewModal stockSymbol={stockSymbol} updateClasses={updateClasses} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
                             </div>
                         </>
                     }
