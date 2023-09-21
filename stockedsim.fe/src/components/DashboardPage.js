@@ -85,25 +85,35 @@ function DashboardPage() {
         if (view === 'buyView') {  
             return (
                 <>
-                    <div className="w-full text-gray-700 flex items-center justify-center max-h-1/20 pb-1">
-                        <div className="relative inline-block w-48 text-gray-700" style={{userSelect:'none'}}>
-                            <div className="flex items-center justify-between w-full bg-blue-200 py-2 rounded-full">
-                                <div
-                                    className={`absolute top-0 bottom-0 rounded-full w-1/2 bg-blue-500 transition-transform duration-300 ease-in-out transform ${tradeMode === 'sell' ? 'translate-x-full' : ''}`}
-                                ></div>
-                                <button
-                                    className="w-1/2 text-white z-10"
-                                    onClick={() => setTradeMode('buy')}>
-                                    Buy
-                                </button>
-                                <button
-                                    className="w-1/2 text-white z-10"
-                                    onClick={() => setTradeMode('sell')}>
-                                    Sell
-                                </button>
+                    <div className="w-full max-h-1/20 flex">
+                        <div className="w-4/5 text-gray-700 flex items-center justify-center">
+                            <div className="relative inline-block w-48 text-gray-700" style={{ userSelect: 'none' }}>
+                                <div className="flex items-center justify-between w-full bg-blue-200 py-2 rounded-full">
+                                    <div
+                                        className={`absolute top-0 bottom-0 rounded-full w-1/2 bg-blue-500 transition-transform duration-300 ease-in-out transform ${tradeMode === 'sell' ? 'translate-x-full' : ''}`}
+                                    ></div>
+                                    <button
+                                        className="w-1/2 text-white z-10"
+                                        onClick={() => setTradeMode('buy')}>
+                                        Buy
+                                    </button>
+                                    <button
+                                        className="w-1/2 text-white z-10"
+                                        onClick={() => setTradeMode('sell')}>
+                                        Sell
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                        <div
+                            className="w-1/5 text-white flex items-center justify-center bg-gradient-to-r from-gray-800 to-gray-700 shadow-lg rounded-t-md font-semibold text-xl tracking-wide border-b border-gray-700"
+                            style={{ userSelect: 'none', boxShadow: '0px 2px 15px rgba(0, 0, 0, 0.15)' }}
+                        >
+                            {tradeMode === 'buy' ? "All Purchasable Stocks" : "All Owned Stocks"}
+                        </div>
+
                     </div>
+                    
                     <div className="h-19/20">
                     {tradeMode === 'buy' ? <BuyView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} /> :
                             <SellView classesData={classes} classId={classId} />}
@@ -132,18 +142,18 @@ function DashboardPage() {
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-gray-100">
+        <div className="flex flex-col h-full w-full bg-gray-200">
             <header className="w-full bg-blue-600 xs:p-0 sm:p-1 md:p-1 lg:p-3 xl:p-3 text-white max-h-3/40">
                 <div className="flex justify-between items-center">
                     <a className="font-semibold xs:text-xs sm:text-lg md:text-xl lg:text-2xl xl:text-2xl" href="/#" style={{ userSelect: 'none' }}>StockEdSim</a>
                     <div className="flex" style={{ userSelect: 'none' }}>
-                        <button className="truncate bg-green-500 hover:bg-green-700 xs:text-xs sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold xs:py-0 sm:py-0 lg:py-1 px-2 sm:px-3 md:px-4 rounded mr-3" onClick={() => setshowJoinClassModal(true)}>Join Class</button>
-                        <button className="truncate bg-red-500 hover:bg-red-700  xs:text-xs sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold xs:py-0 sm:py-0 lg:py-1 px-2 sm:px-3 md:px-4 rounded" onClick={logout}>Logout</button>
+                        <button className="truncate bg-green-500 hover:bg-green-600 xs:text-xs sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold xs:py-0 sm:py-0 lg:py-1 px-2 sm:px-3 md:px-4 rounded mr-3" onClick={() => setshowJoinClassModal(true)}>Join Class</button>
+                        <button className="truncate bg-red-500 hover:bg-red-600  xs:text-xs sm:text-md md:text-lg lg:text-xl xl:text-xl font-bold xs:py-0 sm:py-0 lg:py-1 px-2 sm:px-3 md:px-4 rounded" onClick={logout}>Logout</button>
                     </div>
                 </div>
             </header>
             <div className="flex flex-1 h-37/40">
-                <aside className="bg-gray-800 p-4 pt-16 h-full w-auto sm:w-36 md:w-36 lg:w-36 overflow-y-auto" style={{userSelect: 'none'}}>
+                <aside className="bg-gray-800 p-4 pt-16 h-full w-auto sm:w-36 md:w-36 lg:w-36 overflow-y-auto shadow-lg" style={{userSelect: 'none'}}>
                 <nav>
                     <ul className="space-y-2 text-white">
                         {(userRole === "Teacher" || userRole === "Admin") && (
@@ -177,7 +187,7 @@ function DashboardPage() {
                     </ul>
                 </nav>
                 </aside>
-                <main className="flex-1 p-5 py-3 bg-gray-100 h-full w-full overflow-y-auto">
+                <main className="flex-1 p-4 py-2 bg-gray-200 h-full w-full overflow-y-auto">
                     {renderMainContent()}
                 </main>
             </div>

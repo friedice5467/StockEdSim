@@ -17,3 +17,26 @@ body {
 #root {
     height: 100%;
 }
+
+/* Scrollbar Styles */
+.list-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.list-container::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 8px;
+    border: 2px solid transparent;
+}
+
+.list-container:hover::-webkit-scrollbar-thumb {
+    background-color: #4A5568;
+}
+
+.list-item:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}

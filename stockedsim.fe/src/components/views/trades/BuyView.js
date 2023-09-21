@@ -181,19 +181,41 @@ function BuyView({ classesData, updateClasses, classId }) {
         },
         chart: {
             events: {
-                load: function () {
+                render: function () {
                     const chart = this;
+                    // remove the existing button to avoid duplication
+                    if (chart.customButton) {
+                        chart.customButton.destroy();
+                    }
 
-                        chart.renderer.button(`Buy ${stockSymbol} at $${latestStockPrice}`, chart.chartWidth / 2 - 50, 10, function () {
-
-                            openModal();
-                        }, {
-                            fill: '#a4edba',
-                            r: 5,
-                            padding: 10,
-                            zIndex: 10
+                    if (stockSymbol && latestStockPrice) {
+                        chart.customButton = chart.renderer.button(
+                            `Buy ${stockSymbol} at $${latestStockPrice.toFixed(2)}`,
+                            chart.chartWidth / 2 - 70, 
+                            32,
+                            function () {
+                                openModal();
+                            },
+                            {
+                                fill: '#4CAF50', 
+                                r: 6,
+                                padding: 10,
+                                zIndex: 10,
+                                style: {
+                                    color: 'white',
+                                    fontSize: '1rem',
+                                    fontWeight: 'bold'
+                                }
+                            },
+                            {
+                                fill: '#087f23'
+                            }
+                        ).on('mouseover', function () {
+                            chart.customButton.attr({
+                                cursor: 'pointer' 
+                            });
                         }).add();
-                    
+                    }
                 }
             }
         }
@@ -271,7 +293,7 @@ function BuyView({ classesData, updateClasses, classId }) {
         <div className="flex h-full w-full">
 
             {/* HighchartsReact Area */}
-            <div className="flex-1 pt-2 px-4 h-full" style={{width: "80%"} }>
+            <div className="flex-1 pt-2 px-4 h-full" style={{ width: "80%" }}>
                 {/* Top Bar with Pills and BuyViewModal */}
                 <BuyViewModal isModalOpen={isModalOpen} openModal={openModal} closeModal={closeModal} stockSymbol={stockSymbol} updateClasses={updateClasses}
                     classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
@@ -285,18 +307,23 @@ function BuyView({ classesData, updateClasses, classId }) {
             </div>
 
             {/* Side Area */}
-            <aside className="p-4 bg-gray-800 text-white h-full rounded-md" style={{width: "20%", userSelect:'none'} }>
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    className="mb-4 p-2 w-full rounded-lg focus:ring focus:ring-green-400 focus:outline-none text-black"
-                    value={searchStockStr}
-                    onChange={e => {
-                        setSearchStockStr(e.target.value);
-                        debouncedSearchStocks(e.target.value);
-                    }}
-                    style={{height:"5%"} }
-                />
+            <aside
+                className="px-4 py-2 bg-gradient-to-r from-gray-800 to-gray-700 text-white h-full rounded-b-md relative shadow-lg"
+                style={{ width: "20%", userSelect: 'none', boxShadow: '0px 2px 15px rgba(0, 0, 0, 0.15)' }}
+            >
+                <div className="relative mb-2">
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        className="pl-10 p-2 w-full bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none text-gray-300 placeholder-gray-500 transition duration-150 ease-in-out"
+                        value={searchStockStr}
+                        onChange={e => {
+                            setSearchStockStr(e.target.value);
+                            debouncedSearchStocks(e.target.value);
+                        }}
+                        style={{ height: "5%" }}
+                    />
+                </div>
                 <div style={{ height: "92%", width: "auto" }}>
                     <AutoSizer>
                         {({ height, width }) => (
@@ -305,14 +332,15 @@ function BuyView({ classesData, updateClasses, classId }) {
                                 width={width}
                                 itemCount={filteredStocks.length}
                                 itemSize={35}
+                                className="list-container list-none"
                             >
                                 {Row}
                             </List>
                         )}
                     </AutoSizer>
                 </div>
-
             </aside>
+
 
             {isLoading && <LoadingModal />}
             {apiError && <ApiExceptionModal error={apiError} onClose={() => setApiError(null)} />}

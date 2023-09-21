@@ -30,6 +30,16 @@ function SellView({ classesData, updateClasses, classId }) {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
     const [isFirstRun, setIsFirstRun] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
 
     const targetClass = classesData.find(classItem => classItem.id === classId);
     const stockTransactions = targetClass && targetClass.transactions ? targetClass.transactions.filter(transaction => transaction.stockSymbol === stockSymbol) : [];
@@ -47,7 +57,7 @@ function SellView({ classesData, updateClasses, classId }) {
 
     const options = {
         title: {
-            text: `${stockSymbol}: ${stockName}`
+            text: `${stockSymbol}${stockSymbol ? ":" : ""} ${stockName}`
         },
         scrollbar: {
             enabled: false
@@ -168,6 +178,46 @@ function SellView({ classesData, updateClasses, classId }) {
         credits: {
             enabled: false
         },
+        chart: {
+            events: {
+                render: function () {
+                    const chart = this;
+                    // remove the existing button to avoid duplication
+                    if (chart.customButton) {
+                        chart.customButton.destroy();
+                    }
+
+                    if (stockSymbol && latestStockPrice) {
+                        chart.customButton = chart.renderer.button(
+                            `Sell ${stockSymbol} at $${latestStockPrice.toFixed(2)}`,
+                            chart.chartWidth / 2 - 70,
+                            32,
+                            function () {
+                                openModal();
+                            },
+                            {
+                                fill: '#E43A36',
+                                r: 6,
+                                padding: 10,
+                                zIndex: 10,
+                                style: {
+                                    color: 'white',
+                                    fontSize: '1rem',
+                                    fontWeight: 'bold',
+                                },
+                            },
+                            {
+                                fill: '#C5312D'
+                            }
+                        ).on('mouseover', function () {
+                            chart.customButton.attr({
+                                cursor: 'pointer'
+                            });
+                        }).add();
+                    }
+                }
+            }
+        }
     };
 
     useEffect(() => {
@@ -251,39 +301,36 @@ function SellView({ classesData, updateClasses, classId }) {
 
             {/* HighchartsReact Area */}
             <div className="flex-1 pt-2 px-4 h-full" style={{ width: "80%" }}>
-                {/* Top Bar with Pills and BuyViewModal */}
-                <div className="flex justify-between items-center w-full px-4 mb-2" style={{ height: "7%" }}>
-                    {
-                        stockSymbol && latestStockPrice &&
-                        <>
-                            <div style={{ maxWidth: "50%", maxHeight: "100%" }}>
-                                <SellViewModal stockSymbol={stockSymbol} updateClasses={updateClasses} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
-                            </div>
-                        </>
-                    }
-                </div>
+
+                <SellViewModal isModalOpen={isModalOpen} openModal={openModal} closeModal={closeModal} stockSymbol={stockSymbol}
+                    updateClasses={updateClasses} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
 
                 <HighchartsReact
                     highcharts={Highcharts}
-                    containerProps={{ style: { height: "92%", width: "auto" } }}
+                    containerProps={{ style: { height: "100%", width: "auto" } }}
                     constructorType={'stockChart'}
                     options={options}
                 />
             </div>
 
             {/* Side Area */}
-            <aside className="p-4 bg-gray-800 text-white h-full" style={{ width: "20%" }}>
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    className="mb-4 p-2 w-full rounded-lg focus:ring focus:ring-green-400 focus:outline-none text-black"
-                    value={searchStockStr}
-                    onChange={e => {
-                        setSearchStockStr(e.target.value);
-                        debouncedSearchStocks(e.target.value);
-                    }}
-                    style={{ height: "5%" }}
-                />
+            <aside
+                className="px-4 py-2 bg-gradient-to-r from-gray-800 to-gray-700 text-white h-full rounded-b-md relative shadow-lg"
+                style={{ width: "20%", userSelect: 'none', boxShadow: '0px 2px 15px rgba(0, 0, 0, 0.15)' }}
+            >
+                <div className="relative mb-2">
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        className="pl-10 p-2 w-full bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none text-gray-300 placeholder-gray-500 transition duration-150 ease-in-out"
+                        value={searchStockStr}
+                        onChange={e => {
+                            setSearchStockStr(e.target.value);
+                            debouncedSearchStocks(e.target.value);
+                        }}
+                        style={{ height: "5%" }}
+                    />
+                </div>
                 <div style={{ height: "92%", width: "auto" }}>
                     <AutoSizer>
                         {({ height, width }) => (
@@ -292,13 +339,13 @@ function SellView({ classesData, updateClasses, classId }) {
                                 width={width}
                                 itemCount={filteredStocks.length}
                                 itemSize={35}
+                                className="list-container list-none"
                             >
                                 {Row}
                             </List>
                         )}
                     </AutoSizer>
                 </div>
-
             </aside>
 
             {isLoading && <LoadingModal />}
