@@ -5,13 +5,14 @@ StockEdSim is a financial educational simulation designed to bring the experienc
 ## Features
 
 - **User Authentication:** The application ensures secure user registration and login using JWT tokens and ASP.NET Identity.
-- **Dashboard:** Provides an at-a-glance overview of individual stocks, transaction histories, and associated classes.
+- **Dashboard:** Provides an at-a-glance overview of individual stocks, transaction histories, portfolio data over time, and associated classes.
 - **Stock Transactions:** Simulate near real-time stock transactions to experience the thrill of the stock market without any real-world financial implications.
-- **Class Management:** Track and manage class balances with ease, ensuring a structured classroom experience for a teacher. 
+- **Class Management:** Track and manage class balances with ease, ensuring a structured classroom experience for a teacher.
+- **Leaderboards**: View and compete against other students in the same class to achieve the highest profits.
 
 ## Tech Stack
 
-- **Backend:** ASP.NET Identity, .NET Core, Entity Framework Core
+- **Backend:** ASP.NET Identity, .NET Core, Entity Framework Core, Webjob
 - **Frontend:** React, Tailwind CSS
 - **Database:** PostgreSQL
 
