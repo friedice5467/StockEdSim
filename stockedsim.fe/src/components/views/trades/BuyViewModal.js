@@ -109,14 +109,14 @@ function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockP
                                 <h3 className="text-lg leading-6 font-medium text-gray-900">Buy {stockSymbol}</h3>
                                 <div className="mt-2">
                                     <p>Current balance for the class: ${currentBalance.toFixed(2)}</p>
-                                    <p>Expected balance after purchase: ${expectedBalanceAfterPurchase}</p>
+                                    <p>Expected balance after purchase: ${expectedBalanceAfterPurchase.toFixed(2)}</p>
                                     <div className="flex">
                                         <button onClick={() => toggleConversion(true)} className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-2 rounded-l-lg">
                                             Convert to {isCurrency ? stockSymbol : "$"}
                                         </button>
                                         {isCurrency ? (
                                             <CurrencyInput
-                                                placeholder={`Enter amount in $`}
+                                                placeholder={`Enter amount in $ to buy`}
                                                 value={amount}
                                                 onChange={e => updateExpectedBalance(e.target.value)}
                                                 className="border p-2 w-full"
@@ -124,7 +124,7 @@ function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockP
                                         ) : (
                                             <input
                                                 type="number"
-                                                placeholder={`Enter amount in ${stockSymbol}`}
+                                                placeholder={`Enter amount in ${stockSymbol} to buy`}
                                                 value={amount}
                                                 onChange={e => updateExpectedBalance(e.target.value)}
                                                 className="border p-2 w-full"
@@ -136,16 +136,16 @@ function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockP
                             </div>
                             <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                                 <button
-                                    className="w-full inline-flex justify-center rounded-md border border-primary shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                                    onClick={handleBuyClick}
-                                >
-                                    Buy
-                                </button>
-                                <button
                                     onClick={closeModal}
                                     className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
                                 >
                                     Cancel
+                                </button>
+                                <button
+                                    className="w-full inline-flex justify-center rounded-md border border-primary shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mr-3 sm:w-auto sm:text-sm"
+                                    onClick={handleBuyClick}
+                                >
+                                    Buy
                                 </button>
                             </div>
                         </div>

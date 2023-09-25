@@ -40,20 +40,20 @@ function TransactionGrid({ transactions }) {
             sortable: true
         },
         {
-            headerName: "Price At Transaction",
-            field: "priceAtTransaction",
-            filter: "agNumberFilter",
-            valueFormatter: params => `$${params.value.toFixed(2)}`
-        },
-        {
             headerName: "Transaction Type",
             field: "type",
             filter: "agTextFilter",
             valueGetter: params => params.data.type === 0 ? "Buy" : "Sell"
         },
         {
+            headerName: "Price At Transaction",
+            field: "priceAtTransaction",
+            filter: "agNumberFilter",
+            valueFormatter: params => `$${params.value.toFixed(2)}`
+        },
+        {
             colId: 'profit',
-            headerName: "Profit",
+            headerName: "Average Net Profit",
             field: "netProfit",
             filter: "agNumberFilter",
             sortable: true,

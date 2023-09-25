@@ -7,16 +7,16 @@ function ConfirmationModal({ isOpen, onClose, onConfirm, message }) {
                 <p className="text-xl mb-4">{message}</p>
                 <div className="flex justify-end space-x-4">
                     <button
-                        className="bg-gray-400 text-white px-4 py-2 rounded-lg"
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                         onClick={onConfirm}
                     >
                         Confirm
+                    </button>
+                    <button
+                        className="border border-gray-300 hover:bg-gray-300 text-base px-4 py-2 rounded-lg"
+                        onClick={onClose}
+                    >
+                        Cancel
                     </button>
                 </div>
             </div>

@@ -14,6 +14,7 @@ namespace StockEdSim.Api.Db
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<UserClass> UserClasses { get; set; }
+        public DbSet<Portfolio> Portfolio { get; set; }
         public DbSet<ClassBalance> ClassBalances { get; set; }
         public DbSet<ApiKey> ApiKeys { get; set; }
 
@@ -30,6 +31,16 @@ namespace StockEdSim.Api.Db
                 .HasOne(s => s.Class)
                 .WithMany(c => c.Stocks)
                 .HasForeignKey(c => c.ClassId);
+
+            modelBuilder.Entity<Portfolio>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.Portfolios)
+                .HasForeignKey(p => p.UserId);
+
+            modelBuilder.Entity<Portfolio>()
+                .HasOne(p => p.Class)
+                .WithMany(c => c.Portfolios)
+                .HasForeignKey(p => p.ClassId);
 
             modelBuilder.Entity<Transaction>()
                 .HasOne(s => s.Class)

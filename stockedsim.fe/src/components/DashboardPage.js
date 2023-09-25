@@ -116,7 +116,7 @@ function DashboardPage() {
                     
                     <div className="h-19/20">
                     {tradeMode === 'buy' ? <BuyView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} /> :
-                            <SellView classesData={classes} classId={classId} />}
+                            <SellView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} />}
                     </div>
                 </>
             );
@@ -124,13 +124,9 @@ function DashboardPage() {
         switch (view) {
             case 'classes':
                 return <ClassesView />;
-            case 'buyView':
-                return <BuyView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} />; 
             case 'portfolioView':
                 return <PortfolioView updateClasses={handleUpdateClasses} classesData={classes} />
-            //case 'sellView':
-            //    return <SellView classesData={classes} classId={classId} />;
-            // Add more cases as you expand the functionality
+            // Add more cases 
             default:
                 return (
                     <>

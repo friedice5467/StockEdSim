@@ -12,7 +12,7 @@
         public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
         public virtual ICollection<Class> TaughtClasses { get; set; } = new List<Class>();
         public virtual ICollection<ClassBalance> ClassBalances { get; set; } = new List<ClassBalance>();
-
+        public virtual ICollection<Portfolio> Portfolios { get; set; } = new List<Portfolio>();
     }
 
 }

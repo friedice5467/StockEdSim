@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockEdSim.Api", "StockEdSi
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "stockedsim.fe", "StockEdSim.FE\stockedsim.fe.esproj", "{54EA1F9C-144E-4043-BA16-5179D216F00A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webjobs", "Webjobs\Webjobs.csproj", "{A44F7EB7-AF5B-4ADE-9A8E-3CE595EBED1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{54EA1F9C-144E-4043-BA16-5179D216F00A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54EA1F9C-144E-4043-BA16-5179D216F00A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{54EA1F9C-144E-4043-BA16-5179D216F00A}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{A44F7EB7-AF5B-4ADE-9A8E-3CE595EBED1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A44F7EB7-AF5B-4ADE-9A8E-3CE595EBED1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A44F7EB7-AF5B-4ADE-9A8E-3CE595EBED1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A44F7EB7-AF5B-4ADE-9A8E-3CE595EBED1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StockEdSim.Api.Db;
 using StockEdSim.Api.Model;
@@ -9,7 +10,7 @@ using System.Net;
 
 namespace StockEdSim.Api.Services
 {
-    public class MarketService : IMarketService
+    public class MarketService : IMarketService, IDisposable
     {
         private readonly string _finnhubKey = string.Empty;
         private readonly string _fmpKey = string.Empty;
@@ -54,17 +55,17 @@ namespace StockEdSim.Api.Services
             return ServiceResult<string>.Failure($"Failed to fetch candle data. Error: {response.StatusCode}");
         }
 
-        public async Task<ServiceResult<string>> GetBulkStockQuotesAsync(string symbols)
+        public async Task<ServiceResult<List<FmpStockModel>>> GetBulkStockQuotesAsync(string symbols)
         {
             var url = $"https://financialmodelingprep.com/api/v3/quote/{symbols}?apikey={_fmpKey}";
             HttpResponseMessage response = await client.GetAsync(url);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                return ServiceResult<string>.Success(data: await response.Content.ReadAsStringAsync());
+                return ServiceResult<List<FmpStockModel>>.Success(data: JsonConvert.DeserializeObject<List<FmpStockModel>>(await response.Content.ReadAsStringAsync()));
             }
 
-            return ServiceResult<string>.Failure($"Failed to fetch stock data. Error: {response.StatusCode}");
+            return ServiceResult<List<FmpStockModel>>.Failure($"Failed to fetch stock data. Error: {response.StatusCode}");
         }
 
         public async Task<ServiceResult<decimal?>> GetStockQuoteAsync(string symbol)
@@ -147,7 +148,7 @@ namespace StockEdSim.Api.Services
                 return ServiceResult<List<ClassDTO>>.Failure("Error logging the buy transaction.", statusCode: HttpStatusCode.InternalServerError);
             }
 
-            return await GetClassesData(student.Id);
+            return await GetDashboardData(student.Id);
         }
 
         public async Task<ServiceResult<List<ClassDTO>>> SellStock(StockDTO stockSale, Guid classId)
@@ -182,15 +183,18 @@ namespace StockEdSim.Api.Services
 
             balance.Balance += currentStockPrice.Data.Value * stockSale.Amount;
 
-            decimal netProfit = 0;
+            decimal totalProfit = 0;
             decimal amountToSell = stockSale.Amount;
+            decimal totalSold = 0; 
+
             foreach (var stock in stocksToSell)
             {
                 if (amountToSell <= 0) break;
 
                 var sellingFromThisStock = Math.Min(stock.Amount, amountToSell);
 
-                netProfit += (currentStockPrice.Data.Value - stock.PurchasePrice) * sellingFromThisStock;
+                totalProfit += (currentStockPrice.Data.Value - stock.PurchasePrice) * sellingFromThisStock;
+                totalSold += sellingFromThisStock; 
 
                 stock.Amount -= sellingFromThisStock;
                 if (stock.Amount == 0)
@@ -203,6 +207,12 @@ namespace StockEdSim.Api.Services
                 }
 
                 amountToSell -= sellingFromThisStock;
+            }
+
+            decimal netAverageProfitPerStock = 0;
+            if (totalSold > 0)
+            {
+                netAverageProfitPerStock = totalProfit / totalSold;
             }
 
             await _dbcontext.SaveChangesAsync();
@@ -218,7 +228,7 @@ namespace StockEdSim.Api.Services
                 ClassId = stockSale.ClassId,
                 Type = TransactionType.Sell,
                 CurrentBalanceAfterTransaction = balance.Balance,
-                NetProfit = netProfit
+                NetProfit = netAverageProfitPerStock
             };
 
             if (!await LogTransaction(transaction))
@@ -226,7 +236,7 @@ namespace StockEdSim.Api.Services
                 return ServiceResult<List<ClassDTO>>.Failure("Error logging the sell transaction.", statusCode: HttpStatusCode.InternalServerError);
             }
 
-            return await GetClassesData(student.Id);
+            return await GetDashboardData(student.Id);
         }
 
         public async Task<ServiceResult<Class>> CreateClassroomAsync(ClassDTO createClass, Guid teacherId)
@@ -400,6 +410,11 @@ namespace StockEdSim.Api.Services
             {
                 return false;
             }
+        }
+
+        public void Dispose()
+        {
+            _dbcontext.Dispose();
         }
     }
 }
