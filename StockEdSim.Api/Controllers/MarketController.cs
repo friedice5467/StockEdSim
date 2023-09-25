@@ -6,6 +6,7 @@ using System.Security.Claims;
 
 namespace StockEdSim.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class MarketController : ControllerBase
