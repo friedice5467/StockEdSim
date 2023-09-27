@@ -24,15 +24,12 @@ function DashboardPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [apiException, setApiException] = useState(null);
     const [classes, setClasses] = useState([]);
+    const [portfolioData, setPortfolioData] = useState([]);
     const [activeClass, setActiveClass] = useState("");
     const [tradeMode, setTradeMode] = useState('buy');
     const [classId, setClassId] = useState("");
 
     const [showJoinClassModal, setshowJoinClassModal] = useState(false);
-
-    const handleUpdateClasses = useCallback((newClasses) => {
-        setClasses(newClasses);
-    }, []);
 
     const fetchClasses = useCallback(async () => {
         setIsLoading(true);
@@ -49,22 +46,23 @@ function DashboardPage() {
 
     useEffect(() => {
         if (!currentUser || !connection) return;
-        var classDTOCounter = 0;
+
         const onReceiveUpdate = (serializedData) => {
             const data = JSON.parse(serializedData);
             if (data.IsSuccess) {
                 switch (data.DataType) {
                     case "List<ClassDTO>":
                         setClasses(data.Data);
-                        classDTOCounter++;
-                        console.log(classDTOCounter);
+                        break;
+                    case "List<PortfolioDTO>":
+                        setPortfolioData(data.Data);
                         break;
                     // add more cases if needed
+                    // hindsight, should've just done typescript
                     default:
                         break;
                 }
             } else {
-                console.error("Error receiving update from SignalR:", data.Message);
                 setApiException({ message: data.Message });
             }
         };
@@ -72,7 +70,6 @@ function DashboardPage() {
         connection.on("ReceiveUpdate", onReceiveUpdate);
 
         if (connectionState === HubConnectionState.Connected) {
-            console.log("Connection established, fetching classes now");
             fetchClasses();
         }
 
@@ -155,8 +152,8 @@ function DashboardPage() {
                     </div>
                     
                     <div className="h-19/20">
-                    {tradeMode === 'buy' ? <BuyView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} /> :
-                            <SellView classesData={classes} updateClasses={handleUpdateClasses} classId={classId} />}
+                    {tradeMode === 'buy' ? <BuyView classesData={classes} classId={classId} /> :
+                            <SellView classesData={classes} classId={classId} />}
                     </div>
                 </>
             );
@@ -165,7 +162,7 @@ function DashboardPage() {
             case 'classes':
                 return <ClassesView />;
             case 'portfolioView':
-                return <PortfolioView updateClasses={handleUpdateClasses} classesData={classes} />
+                return <PortfolioView classesData={classes} portfolioData={portfolioData} />
             // Add more cases 
             default:
                 return (

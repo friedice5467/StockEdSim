@@ -6,7 +6,7 @@ import ApiExceptionModal from '../../ApiExceptionModal';
 import ConfirmationModal from '../../ConfirmationModal';
 import CurrencyInput from '../../../helpers/CurrencyInput';
 
-function SellViewModal({ isModalOpen, openModal, closeModal, classesData, updateClasses, classId, stockSymbol, stockPrice }) {
+function SellViewModal({ isModalOpen, openModal, closeModal, classesData, classId, stockSymbol, stockPrice }) {
     const { currentUser } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
@@ -71,13 +71,7 @@ function SellViewModal({ isModalOpen, openModal, closeModal, classesData, update
         };
 
         try {
-            const response = await api.post(`/market/sell/${classId}`, stockPurchaseData);
-            if (response.status === 200) {
-                console.log(response.data);
-                updateClasses(response.data);
-            } else {
-                // Handle other statuses here
-            }
+            cawait api.post(`/market/sell/${classId}`, stockPurchaseData);
         } catch (error) {
             console.error("Error selling stock:", error);
             if (error.response && error.response.data) {

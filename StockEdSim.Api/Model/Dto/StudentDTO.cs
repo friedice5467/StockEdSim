@@ -1,6 +1,6 @@
-﻿namespace StockEdSim.Api.Model
+﻿namespace StockEdSim.Api.Model.Dto
 {
-    public class StudentData
+    public class StudentDTO
     {
         public Guid StudentId { get; set; }
         public string StudentName { get; set; }

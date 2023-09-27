@@ -20,7 +20,7 @@ Highcharts.setOptions({
     }
 });
 
-function BuyView({ classesData, updateClasses, classId }) {
+function BuyView({ classesData, classId }) {
     const [stocks, setStocks] = useState([]);
     const [stockSymbol, setStockSymbol] = useState("");
     const [stockName, setStockName] = useState("");
@@ -69,6 +69,7 @@ function BuyView({ classesData, updateClasses, classId }) {
                 name: `${stockSymbol} Stock Price`,
                 data: chartData.map(item => [item.date.getTime(), item.o, item.h, item.l, item.c]),
                 tooltip: {
+                    valuePrefix: '$',  
                     valueDecimals: 2
                 }
             },
@@ -88,7 +89,10 @@ function BuyView({ classesData, updateClasses, classId }) {
         ],
         yAxis: [{
             labels: {
-                align: 'left'
+                align: 'left',
+                formatter: function () {
+                    return `$${this.value.toFixed(2)}`;
+                }
             },
             height: '80%',
             resize: {
@@ -295,7 +299,7 @@ function BuyView({ classesData, updateClasses, classId }) {
             {/* HighchartsReact Area */}
             <div className="flex-1 pt-2 px-4 h-full" style={{ width: "80%" }}>
                 {/* Top Bar with Pills and BuyViewModal */}
-                <BuyViewModal isModalOpen={isModalOpen} openModal={openModal} closeModal={closeModal} stockSymbol={stockSymbol} updateClasses={updateClasses}
+                <BuyViewModal isModalOpen={isModalOpen} openModal={openModal} closeModal={closeModal} stockSymbol={stockSymbol} 
                     classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
 
                 <HighchartsReact

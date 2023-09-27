@@ -4,11 +4,114 @@ import LoadingModal from '../../LoadingModal';
 import ApiExceptionModal from '../../ApiExceptionModal';
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
-
+import NoDataToDisplay from 'highcharts/modules/no-data-to-display';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
+NoDataToDisplay(Highcharts);
+
+Highcharts.setOptions({
+    lang: {
+        noData: "No data available",
+        rangeSelectorFrom: 'From',
+        rangeSelectorTo: 'To'
+    }
+});
+
+
+function PortfolioLineChart({ portfolioData, currentPortfolioValue }) {
+    const dataWithCurrent = [
+        ...portfolioData.map(item => [new Date(item.CalculatedDate).getTime(), item.Valuation]),
+        [new Date().getTime(), currentPortfolioValue]
+    ];
+
+    const options = {
+        title: {
+            text: `Portfolio Value Over Time`
+        },
+        scrollbar: {
+            enabled: false
+        },
+        series: [
+            {
+                type: 'line',
+                name: '',
+                data: dataWithCurrent,
+                tooltip: {
+                    valuePrefix: '$',  
+                    valueDecimals: 2
+                }
+            },
+        ],
+        yAxis: {
+            labels: {
+                formatter: function () {
+                    return `$${this.value.toFixed(2)}`;  
+                }
+            }
+        },
+        rangeSelector: {
+            buttonTheme: {
+                fill: 'none',
+                stroke: 'none',
+                'stroke-width': 0,
+                r: 8,
+                style: {
+                    color: '#039',
+                    fontWeight: 'bold'
+                },
+                states: {
+                    hover: {
+                    },
+                    select: {
+                        fill: '#039',
+                        style: {
+                            color: 'white'
+                        }
+                    }
+                }
+            },
+            inputBoxBorderColor: 'gray',
+            inputBoxWidth: 120,
+            inputBoxHeight: 18,
+            inputStyle: {
+                color: '#039',
+                fontWeight: 'bold'
+            },
+            labelStyle: {
+                color: 'silver',
+                fontWeight: 'bold'
+            },
+            selected: 6
+        },
+        noData: {
+            position: {
+                align: 'center',
+                verticalAlign: 'middle'
+            },
+            style: {
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                color: '#303030'
+            },
+            useHTML: true,
+            attr: { 'class': 'customNoData' }
+        },
+        credits: {
+            enabled: false
+        },
+    };
+
+    return (
+        <HighchartsReact
+            highcharts={Highcharts}
+            containerProps={{ style: { height: "100%", width: "auto" } }}
+            constructorType={'stockChart'}
+            options={options}
+        />
+    );
+}
 function TransactionGrid({ transactions }) {
     const [gridApi, setGridApi] = useState(null);
     const [columnApi, setColumnApi] = useState(null);
@@ -95,7 +198,7 @@ function TransactionGrid({ transactions }) {
     );
 }
 
-function PortfolioView({ updateClasses, classesData }) {
+function PortfolioView({ classesData, portfolioData }) {
     const [selectedClass, setSelectedClass] = useState(null);
     const [stockQuotes, setStockQuotes] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -127,12 +230,27 @@ function PortfolioView({ updateClasses, classesData }) {
         } else {
             if (classesData && classesData.length === 1) {
                 const defaultClass = classesData[0];
+                const selectedClassId = defaultClass.id;
                 setSelectedClass(defaultClass);
                 fetchStockQuotes(defaultClass);
+                fetchPortfolioValues(selectedClassId);
             }
         }
 
-    }, [updateClasses, classesData]);
+    }, [classesData]);
+
+    const fetchPortfolioValues = async (classId) => {
+        try {
+            setIsLoading(true);
+            await api.get(`/market/myprofile/getportfolioValue/${classId}`);
+        }
+        catch (error) {
+            setApiException(error);
+        }
+        finally {
+            setIsLoading(false);
+        }
+    }
 
     const fetchStockQuotes = async (selectedClass) => {
         const symbols = selectedClass.stocks.map(s => s.stockSymbol).join(',');
@@ -179,6 +297,10 @@ function PortfolioView({ updateClasses, classesData }) {
     }
 
     const percentChange = ((totalStockValue - totalInvestmentValue) / totalInvestmentValue) * 100;
+    let currentPortfolioValue = 0;
+    if (totalStockValue > 0 && selectedClass) {
+        currentPortfolioValue = totalStockValue + selectedClass.classBalances[0].balance;
+    }
 
     const color = percentChange >= 0 ? 'green' : 'red';
     const arrow = percentChange >= 0 ? '↑' : '↓';
@@ -248,8 +370,8 @@ function PortfolioView({ updateClasses, classesData }) {
 
                 </div>
 
-                <div className="w-1/2 mb-4 pl-2">
-                    <p>Some content here TODO</p>
+                <div className="w-1/2 pt-8 mb-4 pl-2">
+                    <PortfolioLineChart portfolioData={portfolioData} currentPortfolioValue={currentPortfolioValue} />
                 </div>
 
             </div>

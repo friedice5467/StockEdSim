@@ -262,22 +262,22 @@ namespace StockEdSim.Api.Services
         }
 
 
-        public async Task<ServiceResult<Dictionary<Guid, List<StudentData>>>> GetStudentsAcrossMyClasses(Guid teacherId)
+        public async Task<ServiceResult<Dictionary<Guid, List<StudentDTO>>>> GetStudentsAcrossMyClasses(Guid teacherId)
         {
             var classes = await _dbcontext.Classes.Where(c => c.TeacherId == teacherId).ToListAsync();
 
             if (!classes.Any())
             {
-                return ServiceResult<Dictionary<Guid, List<StudentData>>>.Failure("No classes found for this teacher.", statusCode: HttpStatusCode.NotFound);
+                return ServiceResult<Dictionary<Guid, List<StudentDTO>>>.Failure("No classes found for this teacher.", statusCode: HttpStatusCode.NotFound);
             }
 
-            var result = new Dictionary<Guid, List<StudentData>>();
+            var result = new Dictionary<Guid, List<StudentDTO>>();
 
             foreach (var classItem in classes)
             {
                 var studentData = await _dbcontext.UserClasses
                                 .Where(uc => uc.ClassId == classItem.Id)
-                                .Select(uc => new StudentData
+                                .Select(uc => new StudentDTO
                                 {
                                     StudentId = uc.UserId,
                                     StudentName = uc.User.FullName ?? string.Empty,
@@ -295,7 +295,7 @@ namespace StockEdSim.Api.Services
                 result.Add(classItem.Id, studentData);
             }
 
-            return ServiceResult<Dictionary<Guid, List<StudentData>>>.Success(data: result);
+            return ServiceResult<Dictionary<Guid, List<StudentDTO>>>.Success(data: result);
         }
 
         public async Task<ServiceResult<List<ClassDTO>>> GetDashboardData(Guid userId)
@@ -381,6 +381,19 @@ namespace StockEdSim.Api.Services
             }
 
             return await GetDashboardData(userId);
+        }
+
+        public async Task<ServiceResult<List<PortfolioDTO>>> GetPortfolioByIds(Guid userId, Guid classId)
+        {
+            var portfolioData = await _dbcontext.Portfolio.Where(x => x.UserId == userId && x.ClassId == classId).ToListAsync();
+            if (portfolioData == null || !portfolioData.Any())
+            {
+                return ServiceResult<List<PortfolioDTO>>.Failure("Class not found", statusCode: HttpStatusCode.NotFound);
+            }
+
+            var data = _mapper.Map<List<PortfolioDTO>>(portfolioData);
+
+            return ServiceResult<List<PortfolioDTO>>.Success(data: data);
         }
 
         private async Task<bool> LogTransaction(Transaction transaction)

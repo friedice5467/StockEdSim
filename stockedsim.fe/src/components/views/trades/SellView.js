@@ -20,7 +20,7 @@ Highcharts.setOptions({
     }
 });
 
-function SellView({ classesData, updateClasses, classId }) {
+function SellView({ classesData, classId }) {
     const [stocks, setStocks] = useState([]);
     const [stockSymbol, setStockSymbol] = useState("");
     const [stockName, setStockName] = useState("");
@@ -68,6 +68,7 @@ function SellView({ classesData, updateClasses, classId }) {
                 name: `${stockSymbol} Stock Price`,
                 data: chartData.map(item => [item.date.getTime(), item.o, item.h, item.l, item.c]),
                 tooltip: {
+                    valuePrefix: '$', 
                     valueDecimals: 2
                 }
             },
@@ -87,7 +88,10 @@ function SellView({ classesData, updateClasses, classId }) {
         ],
         yAxis: [{
             labels: {
-                align: 'left'
+                align: 'left',
+                formatter: function () {
+                    return `$${this.value.toFixed(2)}`;
+                }
             },
             height: '80%',
             resize: {
@@ -303,7 +307,7 @@ function SellView({ classesData, updateClasses, classId }) {
             <div className="flex-1 pt-2 px-4 h-full" style={{ width: "80%" }}>
 
                 <SellViewModal isModalOpen={isModalOpen} openModal={openModal} closeModal={closeModal} stockSymbol={stockSymbol}
-                    updateClasses={updateClasses} classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
+                    classesData={classesData} classId={classId} stockPrice={latestStockPrice} />
 
                 <HighchartsReact
                     highcharts={Highcharts}

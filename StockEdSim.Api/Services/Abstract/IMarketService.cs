@@ -16,7 +16,8 @@ namespace StockEdSim.Api.Services.Abstract
         Task<ServiceResult<List<ClassDTO>>> BuyStock(StockDTO stockPurchase, Guid classId);
         Task<ServiceResult<List<ClassDTO>>> SellStock(StockDTO stockSale, Guid classId);
         Task<ServiceResult<Class>> CreateClassroomAsync(ClassDTO createClass, Guid teacherId);
-        Task<ServiceResult<Dictionary<Guid, List<StudentData>>>> GetStudentsAcrossMyClasses(Guid teacherId);
+        Task<ServiceResult<Dictionary<Guid, List<StudentDTO>>>> GetStudentsAcrossMyClasses(Guid teacherId);
         Task<ServiceResult<List<ClassDTO>>> JoinClassById(Guid userId, Guid classId);
+        Task<ServiceResult<List<PortfolioDTO>>> GetPortfolioByIds(Guid userId, Guid classId);
     }
 }

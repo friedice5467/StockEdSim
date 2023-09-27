@@ -6,7 +6,7 @@ import ApiExceptionModal from '../../ApiExceptionModal';
 import ConfirmationModal from '../../ConfirmationModal';
 import CurrencyInput from '../../../helpers/CurrencyInput';
 
-function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockPrice, isModalOpen, openModal, closeModal }) {
+function BuyViewModal({ classesData, classId, stockSymbol, stockPrice, isModalOpen, openModal, closeModal }) {
     const { currentUser } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
@@ -74,13 +74,7 @@ function BuyViewModal({ classesData, updateClasses, classId, stockSymbol, stockP
         };
 
         try {
-            const response = await api.post(`/market/buy/${classId}`, stockPurchaseData);
-            if (response.status === 200) {
-                console.log(response.data);
-                updateClasses(response.data);
-            } else {
-                // Handle other statuses here
-            }
+            await api.post(`/market/buy/${classId}`, stockPurchaseData);
         } catch (error) {
             console.error("Error purchasing stock:", error);
             if (error.response && error.response.data) {
