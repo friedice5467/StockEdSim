@@ -48,34 +48,41 @@ function DashboardPage() {
     }, []);
 
     useEffect(() => {
-        if (currentUser && connection) {
-            connection.on("ReceiveUpdate", function (serializedData) {
-                const data = JSON.parse(serializedData);
-                if (data.IsSuccess) {
-                    switch (data.DataType) {
-                        case "List<ClassDTO>":
-                            setClasses(data.Data);
-                            break;
-                        // add more cases if needed
-                        default:
-                            break;
-                    }
-                } else {
-                    console.error("Error receiving update from SignalR:", data.Message);
-                    setApiException({ message: data.Message });
+        if (!currentUser || !connection) return;
+        var classDTOCounter = 0;
+        const onReceiveUpdate = (serializedData) => {
+            const data = JSON.parse(serializedData);
+            if (data.IsSuccess) {
+                switch (data.DataType) {
+                    case "List<ClassDTO>":
+                        setClasses(data.Data);
+                        classDTOCounter++;
+                        console.log(classDTOCounter);
+                        break;
+                    // add more cases if needed
+                    default:
+                        break;
                 }
-            });
-
-            if (connectionState === HubConnectionState.Connected) {
-                fetchClasses();
+            } else {
+                console.error("Error receiving update from SignalR:", data.Message);
+                setApiException({ message: data.Message });
             }
+        };
 
-            return () => {
-                if (connection) {
-                    connection.off("ReceiveUpdate");
-                }
-            };
+        connection.on("ReceiveUpdate", onReceiveUpdate);
+
+        if (connectionState === HubConnectionState.Connected) {
+            console.log("Connection established, fetching classes now");
+            fetchClasses();
         }
+
+        return () => {
+            if (connection) {
+                connection.off("ReceiveUpdate", onReceiveUpdate);
+            }
+        };
+
+
     }, [currentUser, connection, connectionState, fetchClasses]);
 
     useEffect(() => {

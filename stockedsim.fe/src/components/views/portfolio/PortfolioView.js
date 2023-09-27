@@ -102,7 +102,7 @@ function PortfolioView({ updateClasses, classesData }) {
     const [apiException, setApiException] = useState(null);
 
     useEffect(() => {
-        
+        var isFirstRun = false;
         const fetchData = async () => {
             setIsLoading(true);
 
@@ -121,8 +121,9 @@ function PortfolioView({ updateClasses, classesData }) {
                 setIsLoading(false);
             }
         };
-        if (!classesData) {
+        if (!classesData && !isFirstRun) {
             fetchData();
+            isFirstRun = true;
         } else {
             if (classesData && classesData.length === 1) {
                 const defaultClass = classesData[0];

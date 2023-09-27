@@ -13,8 +13,6 @@ function ProtectedRoute() {
         }
     }, [token, navigate, location]);
 
-    console.log(token);
-
     return token ? <Outlet /> : null;
 }
 
