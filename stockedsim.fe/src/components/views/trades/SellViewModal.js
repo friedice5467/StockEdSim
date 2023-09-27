@@ -71,7 +71,7 @@ function SellViewModal({ isModalOpen, openModal, closeModal, classesData, classI
         };
 
         try {
-            cawait api.post(`/market/sell/${classId}`, stockPurchaseData);
+            await api.post(`/market/sell/${classId}`, stockPurchaseData);
         } catch (error) {
             console.error("Error selling stock:", error);
             if (error.response && error.response.data) {
