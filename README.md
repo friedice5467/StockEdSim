@@ -12,8 +12,8 @@ StockEdSim is a financial educational simulation designed to bring the experienc
 
 ## Tech Stack
 
-- **Backend:** ASP.NET Identity, .NET Core, Entity Framework Core, Webjob
-- **Frontend:** React, Tailwind CSS
+- **Backend:** ASP.NET Identity, .NET Core, Entity Framework Core, Webjobs, SignalR, Server-Side Caching, Rate-Limiting
+- **Frontend:** React, Tailwind CSS, JWT, SignalR, Client-Side Caching
 - **Database:** PostgreSQL
 
 Getting Started
