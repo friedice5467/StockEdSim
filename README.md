@@ -24,9 +24,13 @@
 ## **Performance and Scalability**
 
 - **Rate Limiting**: Ensures system stability by controlling the frequency of requests a user or client can make in a set period.
+  
 - **Server-Side Caching**: Enhances responsiveness by storing frequently accessed data on the server, reducing database calls.
+  
 - **Client-Side Caching**: Speeds up UI load times by keeping regularly used data on the client side, minimizing redundant server requests.
+  
 - **Hybrid-Session Based**: Merges stateful and stateless interactions, optimizing user experience and system efficiency through SignalR.
+  
 
 ## **Getting Started**
 
