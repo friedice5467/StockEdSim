@@ -96,21 +96,19 @@ function TransactionGrid({ transactions }) {
 }
 
 function PortfolioView({ updateClasses, classesData }) {
-    const [classes, setClasses] = useState(null);
     const [selectedClass, setSelectedClass] = useState(null);
     const [stockQuotes, setStockQuotes] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [apiException, setApiException] = useState(null);
 
     useEffect(() => {
+        
         const fetchData = async () => {
             setIsLoading(true);
 
             try {
-                const response = await api.get("/market/myprofile/dashboard");
-                const classesDataApi = response.data;
-                setClasses(classesDataApi);
-                updateClasses(classesDataApi);
+                await api.get("/market/myprofile/dashboard");
+                const classesDataApi = classesData;
 
                 if (classesDataApi && classesDataApi.length === 1) {
                     const defaultClass = classesDataApi[0];
@@ -118,7 +116,6 @@ function PortfolioView({ updateClasses, classesData }) {
                     fetchStockQuotes(defaultClass);
                 }
             } catch (error) {
-                console.error("Error fetching dashboard data:", error);
                 setApiException(error);
             } finally {
                 setIsLoading(false);
@@ -127,7 +124,6 @@ function PortfolioView({ updateClasses, classesData }) {
         if (!classesData) {
             fetchData();
         } else {
-            setClasses(classesData);
             if (classesData && classesData.length === 1) {
                 const defaultClass = classesData[0];
                 setSelectedClass(defaultClass);
@@ -161,7 +157,7 @@ function PortfolioView({ updateClasses, classesData }) {
 
     const handleClassChange = (event) => {
         const classId = event.target.value;
-        const selected = classes.find(c => c.id === classId);
+        const selected = classesData.find(c => c.id === classId);
         setSelectedClass(selected);
         fetchStockQuotes(selected);
     };
@@ -198,12 +194,12 @@ function PortfolioView({ updateClasses, classesData }) {
             <div className="flex w-full px-4">
 
                 <div className="w-1/2 mb-4 pr-2">
-                    {classes && (
+                    {classesData && (
                         <div className="my-2">
                             <label htmlFor="classDropdown" className="mr-2 font-bold">Select Class:</label>
                             <select id="classDropdown" value={selectedClass ? selectedClass.id : ''} onChange={handleClassChange} className="p-2 rounded bg-white text-black w-full">
                                 <option value="">Select a Class</option>
-                                {classes.map(classItem => (
+                                {classesData.map(classItem => (
                                     <option key={classItem.id} value={classItem.id}>
                                         {classItem.className}
                                     </option>

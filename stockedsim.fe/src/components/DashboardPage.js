@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { HubConnectionState } from '@microsoft/signalr';
 import { useAuth } from '../helpers/AuthContext';
 import api from '../helpers/api';
-import ApiExceptionModal from './ApiExceptionModal';  
-import LoadingModal from './LoadingModal';  
+import useSignalR from '../helpers/signalR';
+import ApiExceptionModal from './ApiExceptionModal';
+import LoadingModal from './LoadingModal';
 import JoinClassModal from './JoinClassModal';
 import { TECollapse } from "tw-elements-react";
 
@@ -12,6 +14,9 @@ import SellView from './views/trades/SellView';
 import PortfolioView from './views/portfolio/PortfolioView';
 
 function DashboardPage() {
+    const baseURL = process.env.REACT_APP_API_BASE_URL.replace('/api', '');
+    const { connection, connectionState, error } = useSignalR(`${baseURL}/markethub`);
+
     const { currentUser } = useAuth();
     const userRole = currentUser && currentUser.role;
     const { logout } = useAuth();
@@ -29,34 +34,62 @@ function DashboardPage() {
         setClasses(newClasses);
     }, []);
 
+    const fetchClasses = useCallback(async () => {
+        setIsLoading(true);
+
+        try {
+            await api.get(`/market/myprofile/dashboard`);
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+            setApiException(error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
-        const fetchClasses = async () => {
-            if (currentUser) {
-                setIsLoading(true);
-
-                try {
-                    const response = await api.get("/market/myprofile/dashboard");
-                    setClasses(response.data);
-                } catch (error) {
-                    console.error("Error fetching classes:", error);
-                    setApiException(error);
-                } finally {
-                    setIsLoading(false);
+        if (currentUser && connection) {
+            connection.on("ReceiveUpdate", function (serializedData) {
+                const data = JSON.parse(serializedData);
+                if (data.IsSuccess) {
+                    switch (data.DataType) {
+                        case "List<ClassDTO>":
+                            setClasses(data.Data);
+                            break;
+                        // add more cases if needed
+                        default:
+                            break;
+                    }
+                } else {
+                    console.error("Error receiving update from SignalR:", data.Message);
+                    setApiException({ message: data.Message });
                 }
-            }
-        };
+            });
 
-        fetchClasses();
-    }, [currentUser]);
+            if (connectionState === HubConnectionState.Connected) {
+                fetchClasses();
+            }
+
+            return () => {
+                if (connection) {
+                    connection.off("ReceiveUpdate");
+                }
+            };
+        }
+    }, [currentUser, connection, connectionState, fetchClasses]);
+
+    useEffect(() => {
+        if (error) {
+            console.error("Error with SignalR connection:", error);
+            // Optionally, handle or display this error to the user
+        }
+    }, [error]);
 
     const handleJoinClass = async (passedClassId) => {
         setIsLoading(true);
 
         try {
-            const response = await api.post(`/market/joinClass/${passedClassId}`);
-            console.log(response.data);
-            setClasses(response.data);
+            await api.post(`/market/joinClass/${passedClassId}`);
             setshowJoinClassModal(false);
         } catch (error) {
             console.error("Error joining class:", error);

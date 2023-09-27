@@ -7,6 +7,7 @@ using StockEdSim.Api.Model;
 using StockEdSim.Api.Services.Abstract;
 using StockEdSim.Api.Services;
 using System.Text;
+using StockEdSim.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +29,8 @@ builder.Services.AddCors(options =>
     {
         builder.WithOrigins(corsSettings.Origins)
                .WithMethods(corsSettings.Methods)
-               .WithHeaders(corsSettings.Headers);
+               .WithHeaders(corsSettings.Headers)
+               .AllowCredentials();
     });
 });
 
@@ -56,6 +58,8 @@ builder.Services.AddAuthentication(x =>
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IMarketService, MarketService>();
 
+builder.Services.AddSignalR();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -68,11 +72,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHub<MarketHub>("/markethub");
 app.MapControllers();
 
 app.Run();

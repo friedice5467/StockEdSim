@@ -380,22 +380,7 @@ namespace StockEdSim.Api.Services
                 }
             }
 
-            var userClasses = _dbcontext.Users
-                .Include(u => u.UserClasses)
-                    .ThenInclude(uc => uc.Class)
-                        .ThenInclude(c => c.ClassBalances)
-                .Where(u => u.Id == userId)
-                .SelectMany(u => u.UserClasses.Select(uc => uc.Class))
-                .ToList();
-
-            var userClassDTO = _mapper.Map<List<ClassDTO>>(userClasses);
-
-            if (userClassDTO == null)
-            {
-                return ServiceResult<List<ClassDTO>>.Failure("Error retrieving joined class details.", statusCode: HttpStatusCode.InternalServerError);
-            }
-
-            return ServiceResult<List<ClassDTO>>.Success(data: userClassDTO);
+            return await GetDashboardData(userId);
         }
 
         private async Task<bool> LogTransaction(Transaction transaction)

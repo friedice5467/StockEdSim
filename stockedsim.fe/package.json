@@ -5,6 +5,7 @@
   "dependencies": {
     "@ag-grid-community/core": "^30.1.0",
     "@babel/preset-react": "^7.22.15",
+    "@microsoft/signalr": "^7.0.11",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
