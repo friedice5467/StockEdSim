@@ -19,17 +19,11 @@ namespace StockEdSim.Api.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var connectionId = Context.ConnectionId;
-            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            // Log or debug the connection
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var connectionId = Context.ConnectionId;
-            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            // Log or debug the disconnection
             await base.OnDisconnectedAsync(exception);
         }
 
