@@ -57,7 +57,6 @@ function DashboardPage() {
                     case "List<PortfolioDTO>":
                         setPortfolioData(data.Data);
                         break;
-                    // add more cases if needed
                     // hindsight, should've just done typescript
                     default:
                         break;
