@@ -13,6 +13,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\components\views\leaderboard\" />
+    <Folder Include="src\components\views\settings\" />
     <Folder Include="src\components\views\portfolio\" />
     <Folder Include="src\components\views\trades\" />
     <Folder Include="src\helpers\" />

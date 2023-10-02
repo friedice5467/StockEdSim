@@ -8,14 +8,16 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 function LeaderboardGrid({ studentData })
 {
+    // eslint-disable-next-line no-unused-vars
     const [gridApi, setGridApi] = useState(null);
+    // eslint-disable-next-line no-unused-vars
     const [columnApi, setColumnApi] = useState(null);
 
     const onGridReady = (params) => {
         setGridApi(params.api);
         setColumnApi(params.columnApi);
 
-        // Automatically size all columns except "Transaction Date"
+        // Automatically size all columns except ones with column ids
         const columnIds = params.columnApi.getColumns()
         params.columnApi.autoSizeColumns(columnIds);
     };

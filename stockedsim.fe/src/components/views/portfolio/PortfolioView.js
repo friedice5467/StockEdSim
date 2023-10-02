@@ -113,7 +113,9 @@ function PortfolioLineChart({ portfolioData, currentPortfolioValue }) {
     );
 }
 function TransactionGrid({ transactions }) {
+    // eslint-disable-next-line no-unused-vars
     const [gridApi, setGridApi] = useState(null);
+    // eslint-disable-next-line no-unused-vars
     const [columnApi, setColumnApi] = useState(null);
 
     const onGridReady = (params) => {

@@ -13,6 +13,7 @@ import BuyView from './views/trades/BuyView';
 import SellView from './views/trades/SellView';
 import PortfolioView from './views/portfolio/PortfolioView';
 import LeaderboardView from './views/leaderboard/LeaderboardView';
+import SettingsView from './views/settings/SettingsView';
 
 function DashboardPage() {
     const baseURL = process.env.REACT_APP_API_BASE_URL.replace('/api', '');
@@ -168,7 +169,9 @@ function DashboardPage() {
             case 'portfolioView':
                 return <PortfolioView classesData={classes} portfolioData={portfolioData} />
             case 'leaderboardView':
-                return <LeaderboardView classesData={classes} studentData={studentData }/>
+                return <LeaderboardView classesData={classes} studentData={studentData} />
+            case 'settingsView':
+                return <SettingsView currentUser={currentUser}/>
             default:
                 return (
                     <>
