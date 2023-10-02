@@ -52,7 +52,6 @@ function BuyView({ classesData, classId }) {
             text: `${transaction.type === 0 ? "Bought" : "Sold"} Price: ${transaction.priceAtTransaction.toFixed(2)} Amount: ${transaction.amount.toFixed(2)}`
         };
     });
-    console.log(chartData);
     const allTimeHigh = chartData.reduce((max, data) => (data.h > max ? data.h : max), -Infinity);
     const allTimeLow = chartData.reduce((min, data) => (data.l < min ? data.l : min), Infinity);
 
@@ -97,6 +96,9 @@ function BuyView({ classesData, classId }) {
             height: '80%',
             resize: {
                 enabled: true
+            },
+            accessibility: {
+                enabled: false
             },
             plotLines: [{
                 color: 'green',

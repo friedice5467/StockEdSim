@@ -174,6 +174,21 @@ namespace StockEdSim.Api.Controllers
             return StatusCode((int)result.StatusCode, result.Message);
         }
 
+        [HttpGet("leaderboards/{classId}")]
+        public async Task<IActionResult> GetLeaderboards([FromRoute] Guid classId)
+        {
+            var userId = GetUserGuid();
+            var result = await _marketService.GetLeaderboardDataByClassId(classId);
+            if(result.IsSuccess)
+            {
+                var serializedResult = JsonSerializer.Serialize(result);
+                await _marketHubContext.Clients.User(userId.ToString()).SendAsync("ReceiveUpdate", serializedResult);
+                return Ok();
+            }
+            return StatusCode((int)result.StatusCode, result.Message);
+        }
+
+
         private Guid GetUserGuid()
         {
             var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);

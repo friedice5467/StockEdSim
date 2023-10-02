@@ -279,8 +279,8 @@ namespace StockEdSim.Api.Services
                                 .Where(uc => uc.ClassId == classItem.Id)
                                 .Select(uc => new StudentDTO
                                 {
-                                    StudentId = uc.UserId,
-                                    StudentName = uc.User.FullName ?? string.Empty,
+                                    Id = uc.UserId,
+                                    FullName = uc.User.FullName ?? string.Empty,
                                     Profit = _dbcontext.Transactions
                                                      .Where(t => t.StudentId == uc.UserId)
                                                      .Sum(t => t.PriceAtTransaction * t.Amount),
@@ -394,6 +394,39 @@ namespace StockEdSim.Api.Services
             var data = _mapper.Map<List<PortfolioDTO>>(portfolioData);
 
             return ServiceResult<List<PortfolioDTO>>.Success(data: data);
+        }
+
+        public async Task<ServiceResult<List<StudentDTO>>> GetLeaderboardDataByClassId(Guid classId)
+        {
+            var currentClass = await _dbcontext.Classes.FindAsync(classId);
+            if (currentClass == null)
+            {
+                return ServiceResult<List<StudentDTO>>.Failure("Class not found.", statusCode: HttpStatusCode.NotFound);
+            }
+
+            var students = await _dbcontext.UserClasses.Where(uc => uc.ClassId == classId).Include(uc => uc.User).
+                            ThenInclude(u => u.Portfolios.Where(p => p.ClassId == classId).OrderByDescending(p => p.CalculatedDate)).Select(uc => uc.User).ToListAsync();
+
+            if(students == null || !students.Any())
+            {
+                return ServiceResult<List<StudentDTO>>.Failure("Students not found for class", statusCode: HttpStatusCode.NotFound);
+            }
+
+            var data = _mapper.Map<List<StudentDTO>>(students);
+
+            foreach( var student in data)
+            {
+                student.Profit = (student.Portfolios.FirstOrDefault()?.Valuation ?? currentClass.DefaultBalance) - currentClass.DefaultBalance;
+            }
+
+            data = data.OrderByDescending(x => x.Profit).ToList();
+
+            for (int i  = 0; i < data.Count; i++)
+            {
+                data[i].Rank = i + 1;
+            }
+
+            return ServiceResult<List<StudentDTO>>.Success(data: data);
         }
 
         private async Task<bool> LogTransaction(Transaction transaction)

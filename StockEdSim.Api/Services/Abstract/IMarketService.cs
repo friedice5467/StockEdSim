@@ -19,5 +19,6 @@ namespace StockEdSim.Api.Services.Abstract
         Task<ServiceResult<Dictionary<Guid, List<StudentDTO>>>> GetStudentsAcrossMyClasses(Guid teacherId);
         Task<ServiceResult<List<ClassDTO>>> JoinClassById(Guid userId, Guid classId);
         Task<ServiceResult<List<PortfolioDTO>>> GetPortfolioByIds(Guid userId, Guid classId);
+        Task<ServiceResult<List<StudentDTO>>> GetLeaderboardDataByClassId(Guid classId);
     }
 }

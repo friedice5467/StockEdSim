@@ -20,6 +20,8 @@ namespace StockEdSim.Api
             CreateMap<Stock, StockDTO>();
 
             CreateMap<Portfolio, PortfolioDTO>();
+
+            CreateMap<ApplicationUser, StudentDTO>();
         }
     }
 }

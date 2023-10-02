@@ -12,6 +12,7 @@ import ClassesView from './views/classes/ClassesView';
 import BuyView from './views/trades/BuyView';
 import SellView from './views/trades/SellView';
 import PortfolioView from './views/portfolio/PortfolioView';
+import LeaderboardView from './views/leaderboard/LeaderboardView';
 
 function DashboardPage() {
     const baseURL = process.env.REACT_APP_API_BASE_URL.replace('/api', '');
@@ -25,6 +26,7 @@ function DashboardPage() {
     const [apiException, setApiException] = useState(null);
     const [classes, setClasses] = useState([]);
     const [portfolioData, setPortfolioData] = useState([]);
+    const [studentData, setStudentData] = useState([]);
     const [activeClass, setActiveClass] = useState("");
     const [tradeMode, setTradeMode] = useState('buy');
     const [classId, setClassId] = useState("");
@@ -56,6 +58,9 @@ function DashboardPage() {
                         break;
                     case "List<PortfolioDTO>":
                         setPortfolioData(data.Data);
+                        break;
+                    case "List<StudentDTO>":
+                        setStudentData(data.Data);
                         break;
                     // hindsight, should've just done typescript
                     default:
@@ -162,7 +167,8 @@ function DashboardPage() {
                 return <ClassesView />;
             case 'portfolioView':
                 return <PortfolioView classesData={classes} portfolioData={portfolioData} />
-            // Add more cases 
+            case 'leaderboardView':
+                return <LeaderboardView classesData={classes} studentData={studentData }/>
             default:
                 return (
                     <>

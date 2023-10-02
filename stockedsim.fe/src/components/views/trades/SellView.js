@@ -234,7 +234,6 @@ function SellView({ classesData, classId }) {
                 const stockSymbolsSet = new Set(availStocks.map(stock => stock.stockSymbol));
 
                 const filteredStocks = stocksData.filter(stock => stockSymbolsSet.has(stock.symbol));
-                console.log(filteredStocks);
                 filteredStocks.sort((a, b) => a.symbol.localeCompare(b.symbol));
 
                 setStocks(filteredStocks);

@@ -188,8 +188,6 @@ function TransactionGrid({ transactions }) {
                 columnDefs={columnDefs}
                 rowData={transactions}
                 onGridReady={onGridReady}
-                enableCharts={true}
-                enableRangeSelection={true}
                 rowSelection={'multiple'}
                 defaultColDef={{ flex: 1, resizable: true }}
                 enableFilter={true}
@@ -305,7 +303,7 @@ function PortfolioView({ classesData, portfolioData }) {
     const color = percentChange >= 0 ? 'green' : 'red';
     const arrow = percentChange >= 0 ? '↑' : '↓';
 
-    const titleText = `Current Portfolio Value: $${totalStockValue.toFixed(2)} (<span style="color: ${color}">${arrow} ${Math.abs(percentChange.toFixed(2))}%</span>)`;
+    const titleText = `Current Assets Value: $${totalStockValue.toFixed(2)} (<span style="color: ${color}">${arrow} ${Math.abs(percentChange.toFixed(2))}%</span>)`;
 
     return (
         <div className="flex flex-col items-center h-full w-full text-black" style={{ boxSizing: 'border-box' }}>
