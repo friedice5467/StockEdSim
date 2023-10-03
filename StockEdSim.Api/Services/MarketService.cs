@@ -409,6 +409,8 @@ namespace StockEdSim.Api.Services
             var students = await _dbcontext.UserClasses
                 .Where(uc => uc.ClassId == classId)
                 .Include(uc => uc.User)
+                    .ThenInclude(u => u.ProfileImage)
+                .Include(uc => uc.User)
                     .ThenInclude(u => u.Portfolios)
                 .Join(_dbcontext.UserRoles,
                       uc => uc.UserId,

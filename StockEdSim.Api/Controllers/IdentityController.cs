@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StockEdSim.Api.Model;
 using StockEdSim.Api.Services.Abstract;
-
+using System.Security.Claims;
 
 namespace StockEdSim.Api.Controllers
 {
@@ -53,6 +54,54 @@ namespace StockEdSim.Api.Controllers
             }
 
             return StatusCode((int)result.StatusCode, result.Message);
+        }
+
+        [Authorize]
+        [HttpPatch("myprofile/updateName/{name}")]
+        public async Task<IActionResult> UpdateName([FromRoute] string name)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                var result = await _identityService.UpdateNameAsync(name, GetUserGuid());
+
+                if(result.IsSuccess)
+                {
+                    return Ok(result.Data);
+                }
+                return StatusCode((int)result.StatusCode, result.Message);
+            }
+
+            return BadRequest(new { Message = "Name is not valid" });
+            
+        }
+
+        [Authorize]
+        [HttpPost("myprofile/updateImg")]
+        public async Task<IActionResult> UpdateImg(IFormFile imageFile)
+        {
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var result = await _identityService.UpdateProfileImg(imageFile, GetUserGuid());
+
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Data);
+                }
+                return StatusCode((int)result.StatusCode, result.Message);
+            }
+
+            return BadRequest(new { Message = "Uploaded file is not valid" });
+        }
+
+
+        private Guid GetUserGuid()
+        {
+            var checkThis = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var check = Guid.TryParse(checkThis, out Guid userId);
+            if (!check)
+                throw new Exception("User does not exist");
+
+            return userId;
         }
     }
 }

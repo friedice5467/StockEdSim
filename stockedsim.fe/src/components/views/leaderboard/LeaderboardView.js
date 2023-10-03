@@ -30,7 +30,7 @@ function LeaderboardGrid({ studentData })
         },
         {
             headerName: 'Profile',
-            field: 'ProfileImg',
+            field: 'ProfileImage.ImageUrl',
             sortable: false,
             cellRenderer: (params) => {
                 const imgSrc = params.value || "/DefaultProfileImg.png";

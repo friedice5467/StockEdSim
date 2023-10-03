@@ -7,7 +7,8 @@
         public string? Role { get; set; } 
         public string StudentId { get; set; } = string.Empty;
         public decimal Balance { get; set; }
-        public string? ProfileImg { get; set; }
+        public bool HasImage { get; set; }
+        public virtual ProfileImage ProfileImage { get; set; } = new();
         public virtual ICollection<UserClass> UserClasses { get; set; } = new List<UserClass>();
         public virtual ICollection<Stock> Stocks { get; set; } = new List<Stock>();
         public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
