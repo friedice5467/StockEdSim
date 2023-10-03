@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import jwtDecode from 'jwt-decode';
 import PasswordStrengthBar from 'react-password-strength-bar';
 import { useAuth } from '../helpers/AuthContext';
-import LoadingModal from './LoadingModal';
+import LoadingModal from './uiHelpers/LoadingModal';
 import { useNavigate } from 'react-router-dom';
 
 function LoginRegisterPage() {
@@ -72,7 +72,8 @@ function LoginRegisterPage() {
                     userId: decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"],
                     email: decodedToken.email,
                     role: decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
-                    userClasses: decodedToken.userClasses
+                    userClasses: decodedToken.userClasses,
+                    profileImgUrl: decodedToken.profileImgUrl
                 });
 
                 navigate('/');

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import api from '../../../helpers/api';
 import { useAuth } from '../../../helpers/AuthContext';
-import LoadingModal from '../../LoadingModal';
-import ApiExceptionModal from '../../ApiExceptionModal';
-import ConfirmationModal from '../../ConfirmationModal';
+import LoadingModal from '../../uiHelpers/LoadingModal';
+import ApiExceptionModal from '../../uiHelpers/ApiExceptionModal';
+import ConfirmationModal from '../../uiHelpers/ConfirmationModal';
 import CurrencyInput from '../../../helpers/CurrencyInput';
 
 function SellViewModal({ isModalOpen, openModal, closeModal, classesData, classId, stockSymbol, stockPrice }) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../helpers/api';
-import LoadingModal from '../../LoadingModal';
-import ApiExceptionModal from '../../ApiExceptionModal';
+import LoadingModal from '../../uiHelpers/LoadingModal';
+import ApiExceptionModal from '../../uiHelpers/ApiExceptionModal';
 import BuyViewModal from './BuyViewModal';
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';

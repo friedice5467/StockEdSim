@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../helpers/api';
-import LoadingModal from '../../LoadingModal';
-import ApiExceptionModal from '../../ApiExceptionModal';
+import LoadingModal from '../../uiHelpers/LoadingModal';
+import ApiExceptionModal from '../../uiHelpers/ApiExceptionModal';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';

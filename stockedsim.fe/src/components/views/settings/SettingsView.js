@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import api from '../../../helpers/api';
 import ImageUpload from '../../uiHelpers/ImageUpload';
-import LoadingModal from '../../LoadingModal';
-import ApiExceptionModal from '../../ApiExceptionModal';
+import LoadingModal from '../../uiHelpers/LoadingModal';
+import ApiExceptionModal from '../../uiHelpers/ApiExceptionModal';
 
 function SettingsView({ currentUser }) {
     const [isLoading, setIsLoading] = useState(false);

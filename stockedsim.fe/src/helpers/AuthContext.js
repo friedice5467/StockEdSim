@@ -17,7 +17,8 @@ export function AuthProvider({ children }) {
             userId: initialCurrentUser["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"],
             email: initialCurrentUser.email,
             role: initialCurrentUser["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
-            userClasses: initialCurrentUser.userClasses
+            userClasses: initialCurrentUser.userClasses,
+            profileImgUrl: initialCurrentUser.profileImgUrl
         }
         : null);
 

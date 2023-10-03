@@ -3,8 +3,8 @@ import { HubConnectionState } from '@microsoft/signalr';
 import { useAuth } from '../helpers/AuthContext';
 import api from '../helpers/api';
 import useSignalR from '../helpers/signalR';
-import ApiExceptionModal from './ApiExceptionModal';
-import LoadingModal from './LoadingModal';
+import ApiExceptionModal from './uiHelpers/ApiExceptionModal';
+import LoadingModal from './uiHelpers/LoadingModal';
 import JoinClassModal from './JoinClassModal';
 import { TECollapse } from "tw-elements-react";
 

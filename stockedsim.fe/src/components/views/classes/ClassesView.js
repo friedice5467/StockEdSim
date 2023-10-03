@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../helpers/api';
 import { useAuth } from '../../../helpers/AuthContext';
-import LoadingModal from '../../LoadingModal';
-import ApiExceptionModal from '../../ApiExceptionModal';
+import LoadingModal from '../../uiHelpers/LoadingModal';
+import ApiExceptionModal from '../../uiHelpers/ApiExceptionModal';
 import AddClassModal from './AddClassModal';
 
 function ClassesView() {
