@@ -404,10 +404,22 @@ namespace StockEdSim.Api.Services
                 return ServiceResult<List<StudentDTO>>.Failure("Class not found.", statusCode: HttpStatusCode.NotFound);
             }
 
-            var students = await _dbcontext.UserClasses.Where(uc => uc.ClassId == classId).Include(uc => uc.User).
-                            ThenInclude(u => u.Portfolios.Where(p => p.ClassId == classId).OrderByDescending(p => p.CalculatedDate)).Select(uc => uc.User).ToListAsync();
+            var targetRoleId = Guid.Parse("b3316c11-f46b-4e22-9a4d-091871b4f2df");
 
-            if(students == null || !students.Any())
+            var students = await _dbcontext.UserClasses
+                .Where(uc => uc.ClassId == classId)
+                .Include(uc => uc.User)
+                    .ThenInclude(u => u.Portfolios)
+                .Join(_dbcontext.UserRoles,
+                      uc => uc.UserId,
+                      ur => ur.UserId,
+                      (uc, ur) => new { uc, ur })
+                .Where(joined => joined.ur.RoleId == targetRoleId)
+                .Select(u => u.uc)
+                .Select(uc => uc.User)
+                .ToListAsync();
+
+            if (students == null || !students.Any())
             {
                 return ServiceResult<List<StudentDTO>>.Failure("Students not found for class", statusCode: HttpStatusCode.NotFound);
             }
