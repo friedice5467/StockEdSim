@@ -5,88 +5,88 @@ namespace StockEdSim.Api.Model
     public class Data
     {
         [JsonProperty("id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [JsonProperty("title")]
-        public object Title { get; set; }
+        public string? Title { get; set; }
 
         [JsonProperty("description")]
-        public object Description { get; set; }
+        public string? Description { get; set; }
 
         [JsonProperty("datetime")]
         public int Datetime { get; set; }
 
         [JsonProperty("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [JsonProperty("animated")]
-        public bool Animated { get; set; }
+        public bool? Animated { get; set; }
 
         [JsonProperty("width")]
-        public int Width { get; set; }
+        public int? Width { get; set; }
 
         [JsonProperty("height")]
-        public int Height { get; set; }
+        public int? Height { get; set; }
 
         [JsonProperty("size")]
-        public int Size { get; set; }
+        public int? Size { get; set; }
 
         [JsonProperty("views")]
-        public int Views { get; set; }
+        public int? Views { get; set; }
 
         [JsonProperty("bandwidth")]
-        public int Bandwidth { get; set; }
+        public int? Bandwidth { get; set; }
 
         [JsonProperty("vote")]
-        public object Vote { get; set; }
+        public object? Vote { get; set; }
 
         [JsonProperty("favorite")]
-        public bool Favorite { get; set; }
+        public bool? Favorite { get; set; }
 
         [JsonProperty("nsfw")]
-        public object Nsfw { get; set; }
+        public bool? Nsfw { get; set; }
 
         [JsonProperty("section")]
-        public object Section { get; set; }
+        public object? Section { get; set; }
 
         [JsonProperty("account_url")]
-        public object AccountUrl { get; set; }
+        public string? AccountUrl { get; set; }
 
         [JsonProperty("account_id")]
-        public int AccountId { get; set; }
+        public int? AccountId { get; set; }
 
         [JsonProperty("is_ad")]
-        public bool IsAd { get; set; }
+        public bool? IsAd { get; set; }
 
         [JsonProperty("in_most_viral")]
-        public bool InMostViral { get; set; }
+        public bool? InMostViral { get; set; }
 
         [JsonProperty("tags")]
-        public List<object> Tags { get; set; }
+        public List<object>? Tags { get; set; }
 
         [JsonProperty("ad_type")]
-        public int AdType { get; set; }
+        public int? AdType { get; set; }
 
         [JsonProperty("ad_url")]
-        public string AdUrl { get; set; }
+        public string? AdUrl { get; set; }
 
         [JsonProperty("in_gallery")]
-        public bool InGallery { get; set; }
+        public bool? InGallery { get; set; }
 
         [JsonProperty("deletehash")]
-        public string Deletehash { get; set; }
+        public string? Deletehash { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("link")]
-        public string Link { get; set; }
+        public string? Link { get; set; }
     }
 
     public class ImageResponse
     {
         [JsonProperty("data")]
-        public Data Data { get; set; }
+        public Data? Data { get; set; }
 
         [JsonProperty("success")]
         public bool Success { get; set; }

@@ -155,8 +155,8 @@ namespace StockEdSim.Api.Services
             {
                 return ServiceResult<string>.Failure("Failed to upload image to Imgur", statusCode: HttpStatusCode.InternalServerError);
             }
-
-            var imageResponse = JsonConvert.DeserializeObject<ImageResponse>(await response.Content.ReadAsStringAsync());
+            var getContent = await response.Content.ReadAsStringAsync();
+            var imageResponse = JsonConvert.DeserializeObject<ImageResponse>(getContent);
             var imgUrl = imageResponse.Data.Link;
             var delHash = imageResponse.Data.Deletehash;
 

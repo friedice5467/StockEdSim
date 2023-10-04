@@ -12,7 +12,11 @@ function SettingsView({ currentUser }) {
     const saveImageUrlToDatabase = async (formData) => {
         setIsLoading(true);
         try {
-            const data = await api.post(`/identity/myprofile/updateImg/`, { formData });
+            const data = await api.post(`/identity/myprofile/updateImg/`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             if (data.IsSuccess) {
                 setUserProfileImg(data.Data);
             }
