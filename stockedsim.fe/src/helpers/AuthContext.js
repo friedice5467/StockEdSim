@@ -18,9 +18,17 @@ export function AuthProvider({ children }) {
             email: initialCurrentUser.email,
             role: initialCurrentUser["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
             userClasses: initialCurrentUser.userClasses,
-            profileImgUrl: initialCurrentUser.profileImgUrl
+            profileImgUrl: initialCurrentUser.profileImgUrl,
+            fullName: initialCurrentUser.fullName
         }
         : null);
+
+    const updateCurrentUser = (updates) => {
+        setCurrentUser(prevUser => ({
+            ...prevUser,
+            ...updates
+        }));
+    };
 
     const logout = () => {
         localStorage.removeItem('token');
@@ -38,6 +46,7 @@ export function AuthProvider({ children }) {
     const value = {
         currentUser,
         setCurrentUser,
+        updateCurrentUser,
         token: storedToken,
         logout,
     };

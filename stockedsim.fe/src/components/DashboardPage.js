@@ -19,9 +19,8 @@ function DashboardPage() {
     const baseURL = process.env.REACT_APP_API_BASE_URL.replace('/api', '');
     const { connection, connectionState, error } = useSignalR(`${baseURL}/markethub`);
 
-    const { currentUser } = useAuth();
+    const { currentUser, updateCurrentUser, logout } = useAuth();
     const userRole = currentUser && currentUser.role;
-    const { logout } = useAuth();
     const [view, setView] = useState('default');
     const [isLoading, setIsLoading] = useState(false);
     const [apiException, setApiException] = useState(null);
@@ -170,7 +169,7 @@ function DashboardPage() {
             case 'leaderboardView':
                 return <LeaderboardView classesData={classes} studentData={studentData} />
             case 'settingsView':
-                return <SettingsView currentUser={currentUser}/>
+                return <SettingsView currentUser={currentUser} updateCurrentUser={updateCurrentUser} />
             default:
                 return (
                     <>

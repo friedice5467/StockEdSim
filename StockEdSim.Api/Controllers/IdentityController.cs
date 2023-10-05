@@ -71,8 +71,7 @@ namespace StockEdSim.Api.Controllers
                 return StatusCode((int)result.StatusCode, result.Message);
             }
 
-            return BadRequest(new { Message = "Name is not valid" });
-            
+            return BadRequest(new { Message = "Name is not valid" });  
         }
 
         [Authorize]

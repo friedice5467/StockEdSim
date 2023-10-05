@@ -15,6 +15,7 @@ function ImageUpload({ imgUrl, uploadToBackend }) {
 
             reader.onloadend = () => {
                 const imageElement = new Image();
+                imageElement.crossOrigin = 'anonymous';
                 imageElement.onload = () => {
                     setImage(imageElement.src);
                 };
@@ -47,6 +48,7 @@ function ImageUpload({ imgUrl, uploadToBackend }) {
 
     const getCroppedImg = (imageSrc, crop) => {
         const imageElement = new Image();
+        imageElement.crossOrigin = 'anonymous';
         imageElement.src = imageSrc;
 
         const canvas = document.createElement('canvas');
@@ -74,7 +76,8 @@ function ImageUpload({ imgUrl, uploadToBackend }) {
     };
 
     return (
-        <div className="w-full h-full">
+        <div className="w-full">
+            <img src={image} alt={"Profile img"} className="w-24 h-24 rounded-full object-cover mb-4" />
             <button
                 onClick={() => setIsModalOpen(true)}
                 className="bg-blue-500 text-white px-4 py-2 rounded-md transition hover:bg-blue-600"
@@ -97,6 +100,7 @@ function ImageUpload({ imgUrl, uploadToBackend }) {
                                     onChange={newCrop => setCrop(newCrop)}
                                     onComplete={onCropComplete}
                                     style={{ maxHeight: '100%', maxWidth: '100%' }}
+                                    aspect={1}
                                 >
                                     <img src={image} alt={"Crop"} style={{ maxHeight: '100%', maxWidth: '100%' }} />
                                 </ReactCrop>
