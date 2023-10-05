@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/stock-ed-sim/static/css/main.eac5190c.css",
+    "main.js": "/stock-ed-sim/static/js/main.5d9e1250.js",
+    "static/js/787.3f471101.chunk.js": "/stock-ed-sim/static/js/787.3f471101.chunk.js",
+    "index.html": "/stock-ed-sim/index.html",
+    "main.eac5190c.css.map": "/stock-ed-sim/static/css/main.eac5190c.css.map",
+    "main.5d9e1250.js.map": "/stock-ed-sim/static/js/main.5d9e1250.js.map",
+    "787.3f471101.chunk.js.map": "/stock-ed-sim/static/js/787.3f471101.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.eac5190c.css",
+    "static/js/main.5d9e1250.js"
+  ]
+}
