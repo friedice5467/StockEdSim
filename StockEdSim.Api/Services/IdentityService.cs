@@ -103,8 +103,8 @@ namespace StockEdSim.Api.Services
                 }
                 user.UserClasses = await _dbContext.UserClasses.Where(x => x.UserId == user.Id).ToListAsync();
                 string classIdsString = string.Join(",", user.UserClasses.Select(x => x.ClassId.ToString()));
-                authClaims.Add(new Claim("UserClasses", classIdsString));
-                authClaims.Add(new Claim("ProfileImgUrl", user.ProfileImage.ImageUrl ?? string.Empty));
+                authClaims.Add(new Claim("userClasses", classIdsString));
+                authClaims.Add(new Claim("profileImgUrl", user.ProfileImage.ImageUrl));
 
                 var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
 
@@ -168,7 +168,11 @@ namespace StockEdSim.Api.Services
             {
                 var profileImg = await _dbContext.ProfileImages.FirstOrDefaultAsync(p => p.UserId == userId);
                 if (profileImg != null)
+                {
                     await _client.DeleteAsync($"https://api.imgur.com/3/image/{profileImg.DeleteHash}");
+                    _dbContext.ProfileImages.Remove(profileImg);
+                }
+                    
             }
 
             if (!user.HasImage)

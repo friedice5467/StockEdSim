@@ -21,7 +21,8 @@ namespace StockEdSim.Api
 
             CreateMap<Portfolio, PortfolioDTO>();
 
-            CreateMap<ApplicationUser, StudentDTO>();
+            CreateMap<ApplicationUser, StudentDTO>()
+                .ForMember(dest => dest.ProfileImg, opt => opt.MapFrom(src => src.ProfileImage.ImageUrl));
         }
     }
 }

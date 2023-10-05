@@ -50,11 +50,13 @@ function ImageUpload({ imgUrl, uploadToBackend }) {
         imageElement.src = imageSrc;
 
         const canvas = document.createElement('canvas');
+
+        canvas.width = 350;
+        canvas.height = 350;
+        const ctx = canvas.getContext('2d');
+
         const scaleX = imageElement.naturalWidth / imageElement.width;
         const scaleY = imageElement.naturalHeight / imageElement.height;
-        canvas.width = crop.width;
-        canvas.height = crop.height;
-        const ctx = canvas.getContext('2d');
 
         ctx.drawImage(
             imageElement,
@@ -64,8 +66,8 @@ function ImageUpload({ imgUrl, uploadToBackend }) {
             crop.height * scaleY,
             0,
             0,
-            crop.width,
-            crop.height
+            350, 
+            350  
         );
 
         return canvas.toDataURL('image/png');

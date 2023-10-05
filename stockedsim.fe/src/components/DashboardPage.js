@@ -33,7 +33,6 @@ function DashboardPage() {
     const [classId, setClassId] = useState("");
 
     const [showJoinClassModal, setshowJoinClassModal] = useState(false);
-
     const fetchClasses = useCallback(async () => {
         setIsLoading(true);
 

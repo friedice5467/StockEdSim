@@ -411,7 +411,7 @@ namespace StockEdSim.Api.Services
                 .Include(uc => uc.User)
                     .ThenInclude(u => u.ProfileImage)
                 .Include(uc => uc.User)
-                    .ThenInclude(u => u.Portfolios)
+                    .ThenInclude(u => u.Portfolios.OrderByDescending(p => p.CalculatedDate))
                 .Join(_dbcontext.UserRoles,
                       uc => uc.UserId,
                       ur => ur.UserId,

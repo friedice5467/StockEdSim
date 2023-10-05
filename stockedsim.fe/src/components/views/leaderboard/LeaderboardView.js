@@ -30,13 +30,12 @@ function LeaderboardGrid({ studentData })
         },
         {
             headerName: 'Profile',
-            field: 'ProfileImage.ImageUrl',
+            field: 'ProfileImg',
             sortable: false,
             cellRenderer: (params) => {
                 const imgSrc = params.value || "/DefaultProfileImg.png";
-                console.log(imgSrc);
                 return (
-                    <img src={imgSrc} alt="Profile" width="40" height="40" style={{ borderRadius: '50%' }} />
+                    <img src={imgSrc} alt="Profile" width="40" height="50" style={{ borderRadius: '50%' }} />
                 );
             }
         },
@@ -60,7 +59,7 @@ function LeaderboardGrid({ studentData })
             field: 'Portfolios',
             sortable: true,
             valueGetter: params => {
-                const latestPortfolio = params.data.Portfolios[params.data.Portfolios.length - 1];
+                const latestPortfolio = params.data.Portfolios[0];
                 return `$${latestPortfolio?.Valuation.toFixed(2)}`;
             },
             flex: 1
@@ -73,7 +72,9 @@ function LeaderboardGrid({ studentData })
             <AgGridReact
                 columnDefs={columnsDefs}
                 rowData={studentData}
+                rowHeight={46}
                 onGridReady={onGridReady}
+                rowStyle={{ display: 'flex', alignItems: 'center' }}
                 domLayout='autoHeight'
             />
         </div>
