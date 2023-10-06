@@ -103,7 +103,7 @@ function BuyViewModal({ classesData, classId, stockSymbol, stockPrice, isModalOp
                                 <h3 className="text-lg leading-6 font-medium text-gray-900">Buy {stockSymbol}</h3>
                                 <div className="mt-2">
                                     <p>Current balance for the class: ${currentBalance.toFixed(2)}</p>
-                                    <p>Expected balance after purchase: ${expectedBalanceAfterPurchase.toFixed(2)}</p>
+                                    <p>Expected balance after purchase: ${expectedBalanceAfterPurchase}</p>
                                     <div className="flex">
                                         <button onClick={() => toggleConversion(true)} className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-2 rounded-l-lg">
                                             Convert to {isCurrency ? stockSymbol : "$"}

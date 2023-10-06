@@ -311,7 +311,7 @@ function PortfolioView({ classesData, portfolioData }) {
         <div className="flex flex-col items-center h-full w-full text-black" style={{ boxSizing: 'border-box' }}>
 
             {selectedClass && (
-                <p className="text-center text-xl font-bold mt-4">{selectedClass.className} - Available Spending Balance: ${selectedClass.classBalances[0].balance}</p>
+                <p className="text-center text-xl font-bold mt-4">{selectedClass.className} - Available Spending Balance: ${selectedClass.classBalances[0].balance.toFixed(2)}</p>
             )}
 
             <div className="flex w-full px-4">

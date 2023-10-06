@@ -303,7 +303,7 @@ namespace StockEdSim.Api.Services
             var user = await _dbcontext.Users
                 .Include(u => u.Stocks)
                 .Include(u => u.Transactions)
-                .Include(u => u.UserClasses).ThenInclude(uc => uc.Class).ThenInclude(c => c.ClassBalances)
+                .Include(u => u.UserClasses).ThenInclude(uc => uc.Class).ThenInclude(c => c.ClassBalances.Where(cb => cb.UserId == userId))
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
@@ -368,6 +368,14 @@ namespace StockEdSim.Api.Services
                     };
 
                     await _dbcontext.UserClasses.AddAsync(userClass);
+
+                    var newPortfolioBalance = new Portfolio()
+                    {
+                        CalculatedDate = DateTime.UtcNow,
+                        ClassId = classId,
+                        UserId = userId,
+                        Valuation = targetClass.DefaultBalance
+                    };
 
                     await _dbcontext.SaveChangesAsync();
 

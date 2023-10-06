@@ -44,7 +44,7 @@ function SellViewModal({ isModalOpen, openModal, closeModal, classesData, classI
 
     const validateInput = () => {
         const numericAmount = parseFloat(amount);
-        if (numericAmount <= 0 || (isCurrency && numericAmount > totalAmount) || (!isCurrency && numericAmount * stockPrice > totalCost)) {
+        if (numericAmount <= 0 || (isCurrency && numericAmount > totalCost) || (!isCurrency && numericAmount * stockPrice > totalCost)) {
             return { valid: false, error: "Invalid sell amount." };
         }
         return { valid: true, error: null };
