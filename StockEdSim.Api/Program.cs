@@ -27,6 +27,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
 .AddDefaultTokenProviders();
 
 var corsSettings = builder.Configuration.GetSection("CORS").Get<CorsSettings>();
+corsSettings.Origins = builder.Configuration["CORS:Origins"]?.Split(',');
+corsSettings.Methods = builder.Configuration["CORS:Methods"]?.Split(',');
+corsSettings.Headers = builder.Configuration["CORS:Headers"]?.Split(',');
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
