@@ -39,7 +39,7 @@ function PortfolioLineChart({ portfolioData, currentPortfolioValue }) {
                 name: '',
                 data: dataWithCurrent,
                 tooltip: {
-                    valuePrefix: '$',  
+                    valuePrefix: '$',
                     valueDecimals: 2
                 }
             },
@@ -47,7 +47,7 @@ function PortfolioLineChart({ portfolioData, currentPortfolioValue }) {
         yAxis: {
             labels: {
                 formatter: function () {
-                    return `$${this.value.toFixed(2)}`;  
+                    return `$${this.value.toFixed(2)}`;
                 }
             }
         },
