@@ -246,7 +246,7 @@ function SellView({ classesData, classId }) {
             }
         }
         if (isFirstRun) fetchStocks();
-    }, [isFirstRun]);
+    }, [isFirstRun, targetClass.stocks]);
 
     const debouncedSearchStocks = debounce((value) => {
         if (value.trim() === '') {
