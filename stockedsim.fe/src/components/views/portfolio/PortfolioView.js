@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../../../helpers/api';
 import LoadingModal from '../../uiHelpers/LoadingModal';
 import ApiExceptionModal from '../../uiHelpers/ApiExceptionModal';
