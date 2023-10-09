@@ -377,6 +377,8 @@ namespace StockEdSim.Api.Services
                         Valuation = targetClass.DefaultBalance
                     };
 
+                    await _dbcontext.Portfolio.AddAsync(newPortfolioBalance);
+
                     await _dbcontext.SaveChangesAsync();
 
                     transaction.Commit();
