@@ -16,7 +16,7 @@
 
 ## **Technology Stack**
 
-- **Backend**: ASP.NET Identity, .NET Core, Entity Framework Core, Webjob
+- **Backend**: ASP.NET Identity, .NET Core, Entity Framework Core, Docker, Webjobs
 - **Frontend**: React, Tailwind CSS
 - **Database**: PostgreSQL
 - **Real-time Interaction**: SignalR
@@ -34,16 +34,16 @@
 
 ## **Getting Started**
 
-1. Clone the repository: `git clone [https://github.com/friedice5467/StockEdSim.git]`
-2. Configure the necessary connection strings and tokens within the `appsettings.json` file.
-3. Install the required dependencies for the React frontend: `npm install`
-4. Initiate the development server and run the API server. By default, the API server is accessible at `https://localhost:7112`.
-5. Activate the React development server using `npm start`.
-6. Open your preferred browser and navigate to: `https://localhost:3000`.
+1. Register an account at https://stock-ed-sim.netlify.app/
+2. Join a class using this Id ``c25d3032-4bc8-4f40-960a-6b64cbd9c5bc``
+3. Enjoy!
 
 ## **Upcoming Enhancements**
 
-Numerous exciting features and refinements are on the horizon!
+1. Group chat
+2. 2FA
+3. Day trading
+4. Maybe other options aside from stocks
 
 ## **Contributing**
 
