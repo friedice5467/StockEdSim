@@ -1,6 +1,7 @@
 # StockEdSim: The Financial Educational Simulator
 
 **StockEdSim** offers a sophisticated yet user-friendly platform geared towards demystifying stock trading for educational environments. Rooted in a high school experience that once relied on pen and paper, this simulation transforms the essence of stock trading into an interactive, immersive digital experience. Students and educators can now dive deep into the mechanics of stock trading without the risks associated with the real-world stock market.
+![image](https://github.com/friedice5467/StockEdSim/assets/58054670/29fb6b19-e372-4732-92f0-bd9fc031f1c2)
 
 ## **Key Features**
 
