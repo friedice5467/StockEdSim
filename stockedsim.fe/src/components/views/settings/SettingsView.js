@@ -3,12 +3,15 @@ import api from '../../../helpers/api';
 import ImageUpload from '../../uiHelpers/ImageUpload';
 import LoadingModal from '../../uiHelpers/LoadingModal';
 import ApiExceptionModal from '../../uiHelpers/ApiExceptionModal';
+import ConfirmationModal from '../../uiHelpers/ConfirmationModal';
 
 function SettingsView({ currentUser, updateCurrentUser }) {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
-    const [userProfileImg, setUserProfileImg] = useState(currentUser.profileImgUrl)
-    const [userFullname, setUserFullName] = useState(currentUser.fullName)
+    const [userProfileImg, setUserProfileImg] = useState(currentUser.profileImgUrl);
+    const [userFullname, setUserFullName] = useState(currentUser.fullName);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
 
     const saveImageUrlToDatabase = async (formData) => {
         setIsLoading(true);
@@ -26,6 +29,24 @@ function SettingsView({ currentUser, updateCurrentUser }) {
                 setApiError(error.response.data);
             } else {
                 setApiError("Error uploading image.");
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const SaveUserFullname = async () => {
+        setIsLoading(true);
+        try {
+            const data = await api.patch(`/identity/myprofile/updateName/${userFullname}`);
+            if (data.IsSuccess) {
+                setUserFullName(data.Data);
+            }
+        } catch (error) {
+            if (error.response && error.response.data) {
+                setApiError(error.response.data);
+            } else {
+                setApiError("Error saving name.");
             }
         } finally {
             setIsLoading(false);
@@ -64,6 +85,12 @@ function SettingsView({ currentUser, updateCurrentUser }) {
 
             </div>
 
+            <ConfirmationModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={SaveUserFullname}
+                message={`Are you sure you want to change your name to ${userFullname}?`}
+            />
             {isLoading && <LoadingModal />}
             {apiError && <ApiExceptionModal error={apiError} onClose={() => setApiError(null)} />}
         </div>
