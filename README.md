@@ -41,10 +41,11 @@
 
 ## **Upcoming Enhancements**
 
-1. Group chat
-2. 2FA
-3. Day trading
-4. Maybe other options aside from stocks
+1. Update front end GUI to make it look better
+2. Group chat
+3. 2FA
+4. Day trading
+5. Maybe other options aside from stocks
 
 ## **Contributing**
 
